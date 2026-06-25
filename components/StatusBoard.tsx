@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import type { PhWithQuarter, PhWithAllQuarters, TdsCritical, Quarter, TabMode } from '@/lib/types'
-import { QUARTERS, STATUS_COLORS } from '@/lib/types'
+import { QUARTERS } from '@/lib/types'
 
 const PHDetailPanel = dynamic(() => import('./PHDetailPanel'), { ssr: false })
 
@@ -11,24 +11,18 @@ const POCS = ['All', 'Aravind', 'Meenakshi', 'Induma', 'DK']
 const STATUSES_FILTER = ['All', 'Filed', 'In Process', 'Not filed', 'No TDS Till now', 'Refunded to Investors']
 const CHECKPOINTS = ['All', 'Challan Pending', 'Form 26Q Pending', 'Form 16A Pending']
 
-// Solid pill colours for quarter group headers
-const Q_PILL = {
-  Q1: 'bg-blue-500 text-white',
-  Q2: 'bg-emerald-500 text-white',
-  Q3: 'bg-orange-500 text-white',
-  Q4: 'bg-violet-500 text-white',
-} as const
-
-// Right-border separator colour per quarter (last sub-col of each group)
-const Q_SEP = {
-  Q1: 'border-blue-100',
-  Q2: 'border-emerald-100',
-  Q3: 'border-orange-100',
-  Q4: 'border-violet-100',
-} as const
-
 type CheckboxField = 'challan_done' | 'form_26q_done' | 'form_16a_done'
 
+// Understated enterprise status badge styles
+const STATUS_STYLE: Record<string, string> = {
+  'Filed':                  'bg-[#f0fdf4] text-[#15803d] ring-1 ring-[#bbf7d0]',
+  'In Process':             'bg-[#fffbeb] text-[#92400e] ring-1 ring-[#fde68a]',
+  'Filed, In Process':      'bg-[#fffbeb] text-[#92400e] ring-1 ring-[#fde68a]',
+  'In Process, Filed':      'bg-[#fffbeb] text-[#92400e] ring-1 ring-[#fde68a]',
+  'Not filed':              'bg-[#fef2f2] text-[#991b1b] ring-1 ring-[#fecaca]',
+  'No TDS Till now':        'bg-[#f9fafb] text-[#6b7280] ring-1 ring-[#e5e7eb]',
+  'Refunded to Investors':  'bg-[#eff6ff] text-[#1d4ed8] ring-1 ring-[#bfdbfe]',
+}
 
 function getDisplayName(email: string): string {
   const map: Record<string, string> = {
@@ -41,23 +35,27 @@ function getDisplayName(email: string): string {
   return map[email] || email.split('@')[0]
 }
 
-// ── Visual check indicator (replaces checkbox) ─────────────────────────────
-function CheckCircle({ checked, onClick }: { checked: boolean; onClick: () => void }) {
+// ── Custom enterprise checkbox (no browser default styling) ─────────────────
+function Checkbox({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button
-      onClick={onClick}
-      className="flex items-center justify-center mx-auto transition-transform hover:scale-110 active:scale-95"
-      style={{ width: 28, height: 28 }}
+      onClick={onChange}
+      className="flex items-center justify-center mx-auto"
+      style={{ width: 24, height: 24 }}
     >
-      {checked ? (
-        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      <div
+        className={`w-[15px] h-[15px] rounded-[3px] border flex items-center justify-center transition-colors ${
+          checked
+            ? 'bg-[#111111] border-[#111111]'
+            : 'bg-white border-[#d1d1d1] hover:border-[#999]'
+        }`}
+      >
+        {checked && (
+          <svg viewBox="0 0 10 8" width="9" height="7" fill="none">
+            <path d="M1 4l2.5 2.5L9 1" stroke="white" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
-        </div>
-      ) : (
-        <div className="w-6 h-6 rounded-full border-2 border-gray-200 bg-white hover:border-gray-300 transition-colors" />
-      )}
+        )}
+      </div>
     </button>
   )
 }
@@ -137,7 +135,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // ── Quarter-view toggle ──────────────────────────────────────────────────
   async function toggleCheckbox(ph: PhWithQuarter, field: CheckboxField) {
     if (selectedTab === 'Summary') return
     const q = ph.quarterData
@@ -164,7 +161,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     }))
   }
 
-  // ── Summary-view toggle ──────────────────────────────────────────────────
   async function toggleSummaryCheckbox(ph: PhWithAllQuarters, quarter: Quarter, field: CheckboxField) {
     const q = ph.quarters[quarter]
     const newVal = !(q?.[field] ?? false)
@@ -189,7 +185,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     }))
   }
 
-  // ── Comment save (creates quarter record if needed) ──────────────────────
   async function updateComment(ph: PhWithQuarter, comment: string) {
     const q = ph.quarterData
     if (q?.id) {
@@ -221,7 +216,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     await fetchData()
   }
 
-  // ── Filtering ────────────────────────────────────────────────────────────
   function matchesFilters(ph: { ph_name: string; poc: string; overall_status: string }) {
     if (search && !ph.ph_name.toLowerCase().includes(search.toLowerCase())) return false
     if (pocFilter !== 'All' && ph.poc !== pocFilter) return false
@@ -260,15 +254,15 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
       <div className="grid grid-cols-6 gap-3 mb-6">
         {[
           { label: 'Total PHs',    value: stats.total,     color: 'text-[#111111]' },
-          { label: 'Fully Filed',  value: stats.filed,     color: 'text-green-700' },
-          { label: 'In Process',   value: stats.inProcess, color: 'text-amber-700' },
-          { label: 'Not Filed',    value: stats.notFiled,  color: 'text-red-700'   },
-          { label: 'Refunded',     value: stats.refunded,  color: 'text-blue-700'  },
-          { label: 'Critical PHs', value: stats.critical,  color: 'text-red-700'   },
+          { label: 'Fully Filed',  value: stats.filed,     color: 'text-[#15803d]' },
+          { label: 'In Process',   value: stats.inProcess, color: 'text-[#92400e]' },
+          { label: 'Not Filed',    value: stats.notFiled,  color: 'text-[#991b1b]' },
+          { label: 'Refunded',     value: stats.refunded,  color: 'text-[#1d4ed8]' },
+          { label: 'Critical PHs', value: stats.critical,  color: 'text-[#991b1b]' },
         ].map(s => (
           <div key={s.label} className="bg-white border border-[#e5e5e5] rounded-xl p-4">
             <div className={`text-2xl font-bold ${s.color}`}>{loading ? '—' : s.value}</div>
-            <div className="text-xs text-[#666666] mt-0.5">{s.label}</div>
+            <div className="text-xs text-[#999] mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
@@ -303,7 +297,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
       {/* Search & Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-48">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#bbb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -311,23 +305,23 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search production house..."
-            className="w-full pl-9 pr-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white"
+            className="w-full pl-9 pr-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] placeholder:text-[#bbb] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white"
           />
         </div>
-        <select value={pocFilter} onChange={e => setPocFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
+        <select value={pocFilter} onChange={e => setPocFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#555] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
           {POCS.map(p => <option key={p} value={p}>{p === 'All' ? 'All POCs' : p}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#555] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
           {STATUSES_FILTER.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
         </select>
         {selectedTab !== 'Summary' && (
-          <select value={checkpointFilter} onChange={e => setCheckpointFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
+          <select value={checkpointFilter} onChange={e => setCheckpointFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#555] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
             {CHECKPOINTS.map(c => <option key={c} value={c}>{c === 'All' ? 'All Checkpoints' : c}</option>)}
           </select>
         )}
       </div>
 
-      {/* Table */}
+      {/* Table container */}
       <div className="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {selectedTab === 'Summary' ? (
@@ -351,8 +345,8 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             />
           )}
         </div>
-        <div className="px-5 py-3 border-t border-[#e5e5e5] text-sm text-[#666666]">
-          Showing {displayCount} of {totalCount} production houses
+        <div className="px-5 py-3 border-t border-[#f0f0f0] text-[13px] text-[#999]">
+          {displayCount} of {totalCount} production houses
         </div>
       </div>
 
@@ -370,12 +364,16 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
 
 // ── Summary Table ──────────────────────────────────────────────────────────
 
-const Q_LABELS: Record<Quarter, string> = {
-  Q1: 'Q1 · Apr–Jun',
-  Q2: 'Q2 · Jul–Sep',
-  Q3: 'Q3 · Oct–Dec',
-  Q4: 'Q4 · Jan–Mar',
-}
+const Q_META: { key: Quarter; label: string; short: string }[] = [
+  { key: 'Q1', label: 'Apr – Jun', short: 'Q1' },
+  { key: 'Q2', label: 'Jul – Sep', short: 'Q2' },
+  { key: 'Q3', label: 'Oct – Dec', short: 'Q3' },
+  { key: 'Q4', label: 'Jan – Mar', short: 'Q4' },
+]
+
+// th styles — consistent compact header cells
+const TH = 'text-[11px] font-semibold text-[#999] uppercase tracking-wide px-3 py-3 text-center'
+const TH_LEFT = 'text-[11px] font-semibold text-[#999] uppercase tracking-wide px-4 py-3 text-left'
 
 function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMarkCritical }: {
   phs: PhWithAllQuarters[]
@@ -386,36 +384,44 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
   onMarkCritical: (id: string) => void
 }) {
   return (
-    <table className="w-full" style={{ minWidth: 1140, fontSize: 14 }}>
+    <table className="w-full border-collapse" style={{ minWidth: 1080, fontSize: 13 }}>
       <thead>
-        {/* Row 1: quarter group pills */}
-        <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-          <th rowSpan={2} className="text-left px-5 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-[220px] align-bottom whitespace-nowrap">
-            PH Name
+        {/* Row 1 — quarter group labels */}
+        <tr className="border-b border-[#e8e8e8] bg-white">
+          <th rowSpan={2} className={`${TH_LEFT} w-[210px] border-r border-[#e8e8e8] align-bottom pb-2`}>
+            Production House
           </th>
-          <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-24 align-bottom">
+          <th rowSpan={2} className={`${TH_LEFT} w-20 border-r border-[#e8e8e8] align-bottom pb-2`}>
             POC
           </th>
-          <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-36 align-bottom whitespace-nowrap">
-            Overall Status
+          <th rowSpan={2} className={`${TH_LEFT} w-36 border-r border-[#e8e8e8] align-bottom pb-2`}>
+            Status
           </th>
-          {(Object.keys(Q_LABELS) as Quarter[]).map(q => (
-            <th key={q} colSpan={3} className="text-center px-3 pt-3 pb-2 border-r border-[#e5e5e5]">
-              <span className={`inline-block px-3 py-1 rounded-full text-[13px] font-semibold ${Q_PILL[q]}`}>
-                {Q_LABELS[q]}
+          {Q_META.map((q, qi) => (
+            <th
+              key={q.key}
+              colSpan={3}
+              className={`text-center pt-3 pb-1 ${qi > 0 ? 'border-l-2 border-[#ebebeb]' : ''}`}
+            >
+              <span className="text-[11px] font-semibold text-[#555] uppercase tracking-wider">
+                {q.short}
+              </span>
+              <span className="ml-1.5 text-[10px] font-normal text-[#bbb] normal-case tracking-normal">
+                {q.label}
               </span>
             </th>
           ))}
-          <th rowSpan={2} className="text-center px-4 py-4 font-semibold text-[#666666] w-20 align-bottom">
-            Actions
-          </th>
+          <th rowSpan={2} className={`${TH} w-16 border-l border-[#e8e8e8] align-bottom pb-2`} />
         </tr>
-        {/* Row 2: sub-column labels */}
-        <tr className="border-b-2 border-[#e5e5e5] bg-[#fafafa]">
-          {(Object.keys(Q_LABELS) as Quarter[]).map(q =>
-            (['C', '26Q', '16A'] as const).map((sub, i) => (
-              <th key={`${q}-${sub}`}
-                className={`text-center px-3 pb-3 pt-1 text-xs font-medium text-[#999] w-16 ${i === 2 ? `border-r ${Q_SEP[q]}` : ''}`}
+        {/* Row 2 — sub-column labels */}
+        <tr className="border-b border-[#e8e8e8] bg-white">
+          {Q_META.map((q, qi) =>
+            ['Challan', '26Q', '16A'].map((sub, fi) => (
+              <th
+                key={`${q.key}-${sub}`}
+                className={`${TH} pb-2 pt-1 w-[72px]
+                  ${fi === 0 && qi > 0 ? 'border-l-2 border-[#ebebeb]' : ''}
+                `}
               >
                 {sub}
               </th>
@@ -425,9 +431,13 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
       </thead>
       <tbody>
         {loading ? (
-          <tr><td colSpan={16} className="text-center py-16 text-[#666666]">Loading...</td></tr>
+          <tr>
+            <td colSpan={16} className="text-center py-16 text-[#bbb]">Loading…</td>
+          </tr>
         ) : phs.length === 0 ? (
-          <tr><td colSpan={16} className="text-center py-16 text-[#666666]">No production houses found</td></tr>
+          <tr>
+            <td colSpan={16} className="text-center py-16 text-[#bbb]">No production houses found</td>
+          </tr>
         ) : (
           phs.map((ph, idx) => (
             <SummaryRow
@@ -436,7 +446,7 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
               idx={idx}
               isCritical={criticalIds.has(ph.id)}
               onOpenDetail={() => onOpenDetail(ph)}
-              onToggle={(quarter, field) => onToggle(ph, quarter, field)}
+              onToggle={(q, f) => onToggle(ph, q, f)}
               onMarkCritical={() => onMarkCritical(ph.id)}
             />
           ))
@@ -454,70 +464,56 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
   onToggle: (quarter: Quarter, field: CheckboxField) => void
   onMarkCritical: () => void
 }) {
-  const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'
+  const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#f5f5f5]'
   const fields: CheckboxField[] = ['challan_done', 'form_26q_done', 'form_16a_done']
-  const isRefunded = ph.overall_status === 'Refunded to Investors'
-  const isNoTDS = ph.overall_status === 'No TDS Till now'
-  const skipCircles = isRefunded || isNoTDS
+  const isSkipped = ph.overall_status === 'Refunded to Investors' || ph.overall_status === 'No TDS Till now'
 
   return (
-    <tr className={`${rowBg} border-b border-[#f0f0f0] hover:bg-blue-50/20 transition-colors`}>
+    <tr className={`${rowBg} border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors`}>
       {/* PH Name */}
-      <td className="px-5 py-4 border-r border-[#e5e5e5]">
+      <td className="px-4 py-3 border-r border-[#e8e8e8]">
         <button
           onClick={onOpenDetail}
-          className="font-semibold text-[#111111] hover:underline text-left leading-snug decoration-[#6c47ff]"
+          className="font-semibold text-[#111111] text-left hover:underline underline-offset-2 decoration-[#bbb] leading-snug"
         >
           {ph.ph_name}
         </button>
         {isCritical && (
-          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full font-medium align-middle">
+          <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-[#fff0f0] text-[#cc0000] font-medium align-middle">
             Critical
           </span>
         )}
       </td>
 
       {/* POC */}
-      <td className="px-4 py-4 text-[#666666] border-r border-[#e5e5e5] whitespace-nowrap">
+      <td className="px-4 py-3 text-[#555] border-r border-[#e8e8e8] whitespace-nowrap">
         {ph.poc}
       </td>
 
-      {/* Overall Status */}
-      <td className="px-4 py-4 border-r border-[#e5e5e5]">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[ph.overall_status] || 'bg-gray-100 text-gray-600'}`}>
+      {/* Overall status */}
+      <td className="px-4 py-3 border-r border-[#e8e8e8]">
+        <span className={`inline-block text-[11px] px-2 py-0.5 rounded font-medium whitespace-nowrap ${STATUS_STYLE[ph.overall_status] || 'bg-[#f5f5f5] text-[#555]'}`}>
           {ph.overall_status}
         </span>
       </td>
 
-      {/* Quarter columns OR spanning badge */}
-      {skipCircles ? (
-        <td colSpan={12} className="px-4 py-4 text-center border-r border-[#e5e5e5]">
-          {isRefunded ? (
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-              </svg>
-              Refunded to Investors
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gray-100 text-gray-500 rounded-full text-sm font-medium">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              No TDS Till Now
-            </span>
-          )}
+      {/* Quarter cells */}
+      {isSkipped ? (
+        <td colSpan={12} className="px-6 py-3 border-l border-[#f0f0f0]">
+          <span className="text-[#bbb] italic text-[12px]">—</span>
         </td>
       ) : (
-        (Object.keys(Q_LABELS) as Quarter[]).map(q =>
+        Q_META.map((q, qi) =>
           fields.map((field, fi) => (
             <td
-              key={`${q}-${field}`}
-              className={`px-2 py-4 text-center ${fi === 2 ? `border-r ${Q_SEP[q]}` : ''}`}
+              key={`${q.key}-${field}`}
+              className={`py-3 px-1 text-center
+                ${fi === 0 && qi > 0 ? 'border-l-2 border-[#ebebeb]' : ''}
+              `}
             >
-              <CheckCircle
-                checked={ph.quarters[q]?.[field] ?? false}
-                onClick={() => onToggle(q, field)}
+              <Checkbox
+                checked={ph.quarters[q.key]?.[field] ?? false}
+                onChange={() => onToggle(q.key, field)}
               />
             </td>
           ))
@@ -525,19 +521,19 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
       )}
 
       {/* Actions */}
-      <td className="px-4 py-4">
-        <div className="flex items-center justify-center gap-2">
-          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#6c47ff] transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <td className="px-3 py-3 border-l border-[#e8e8e8]">
+        <div className="flex items-center justify-center gap-1.5">
+          <button onClick={onOpenDetail} title="Open conversation" className="text-[#ccc] hover:text-[#6c47ff] transition-colors">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </button>
           <button
             onClick={onMarkCritical}
             title={isCritical ? 'Already critical' : 'Mark as critical'}
-            className={`transition-colors ${isCritical ? 'text-red-500' : 'text-[#aaa] hover:text-red-500'}`}
+            className={`transition-colors ${isCritical ? 'text-[#cc0000]' : 'text-[#ccc] hover:text-[#cc0000]'}`}
           >
-            <svg className="w-4 h-4" fill={isCritical ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-3.5 h-3.5" fill={isCritical ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </button>
@@ -559,24 +555,24 @@ function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCom
   onMarkCritical: (id: string) => void
 }) {
   return (
-    <table className="w-full" style={{ fontSize: 14 }}>
+    <table className="w-full border-collapse" style={{ fontSize: 13 }}>
       <thead>
-        <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-          <th className="text-left px-5 py-4 font-semibold text-[#666666] w-[240px]">PH Name</th>
-          <th className="text-left px-4 py-4 font-semibold text-[#666666] w-24">POC</th>
-          <th className="text-left px-4 py-4 font-semibold text-[#666666] w-36">Overall Status</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-24">Challan</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-24">Form 26Q</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-24">Form 16A</th>
-          <th className="text-left px-4 py-4 font-semibold text-[#666666]">Comment</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-20">Actions</th>
+        <tr className="border-b border-[#e8e8e8] bg-white">
+          <th className={`${TH_LEFT} w-[240px]`}>Production House</th>
+          <th className={`${TH_LEFT} w-24`}>POC</th>
+          <th className={`${TH_LEFT} w-36`}>Status</th>
+          <th className={`${TH} w-24`}>Challan</th>
+          <th className={`${TH} w-24`}>Form 26Q</th>
+          <th className={`${TH} w-24`}>Form 16A</th>
+          <th className={`${TH_LEFT}`}>Comment</th>
+          <th className={`${TH} w-20`} />
         </tr>
       </thead>
       <tbody>
         {loading ? (
-          <tr><td colSpan={8} className="text-center py-16 text-[#666666]">Loading...</td></tr>
+          <tr><td colSpan={8} className="text-center py-16 text-[#bbb]">Loading…</td></tr>
         ) : phs.length === 0 ? (
-          <tr><td colSpan={8} className="text-center py-16 text-[#666666]">No production houses found</td></tr>
+          <tr><td colSpan={8} className="text-center py-16 text-[#bbb]">No production houses found</td></tr>
         ) : (
           phs.map((ph, idx) => (
             <TableRow
@@ -607,73 +603,73 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
 }) {
   const [editingComment, setEditingComment] = useState(false)
   const [comment, setComment] = useState(ph.quarterData?.comment ?? '')
-  const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'
+  const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#f5f5f5]'
 
   useEffect(() => { setComment(ph.quarterData?.comment ?? '') }, [ph.quarterData?.comment])
 
-  function handleBlur() {
-    setEditingComment(false)
-    onCommentSave(comment)
-  }
-
   return (
-    <tr className={`${rowBg} border-b border-[#f0f0f0] hover:bg-blue-50/20 transition-colors`}>
-      <td className="px-5 py-4">
-        <button onClick={onOpenDetail} className="font-semibold text-[#111111] hover:underline text-left leading-snug decoration-[#6c47ff]">
+    <tr className={`${rowBg} border-b border-[#f0f0f0] hover:bg-[#fafafa] transition-colors`}>
+      <td className="px-4 py-3">
+        <button
+          onClick={onOpenDetail}
+          className="font-semibold text-[#111111] text-left hover:underline underline-offset-2 decoration-[#bbb] leading-snug"
+        >
           {ph.ph_name}
         </button>
         {isCritical && (
-          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full font-medium align-middle">Critical</span>
+          <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded bg-[#fff0f0] text-[#cc0000] font-medium align-middle">
+            Critical
+          </span>
         )}
       </td>
-      <td className="px-4 py-4 text-[#666666]">{ph.poc}</td>
-      <td className="px-4 py-4">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[ph.overall_status] || 'bg-gray-100 text-gray-600'}`}>
+      <td className="px-4 py-3 text-[#555]">{ph.poc}</td>
+      <td className="px-4 py-3">
+        <span className={`inline-block text-[11px] px-2 py-0.5 rounded font-medium whitespace-nowrap ${STATUS_STYLE[ph.overall_status] || 'bg-[#f5f5f5] text-[#555]'}`}>
           {ph.overall_status}
         </span>
       </td>
-      <td className="px-4 py-4 text-center">
-        <CheckCircle checked={ph.quarterData?.challan_done ?? false} onClick={() => onToggle('challan_done')} />
+      <td className="py-3 text-center">
+        <Checkbox checked={ph.quarterData?.challan_done ?? false} onChange={() => onToggle('challan_done')} />
       </td>
-      <td className="px-4 py-4 text-center">
-        <CheckCircle checked={ph.quarterData?.form_26q_done ?? false} onClick={() => onToggle('form_26q_done')} />
+      <td className="py-3 text-center">
+        <Checkbox checked={ph.quarterData?.form_26q_done ?? false} onChange={() => onToggle('form_26q_done')} />
       </td>
-      <td className="px-4 py-4 text-center">
-        <CheckCircle checked={ph.quarterData?.form_16a_done ?? false} onClick={() => onToggle('form_16a_done')} />
+      <td className="py-3 text-center">
+        <Checkbox checked={ph.quarterData?.form_16a_done ?? false} onChange={() => onToggle('form_16a_done')} />
       </td>
-      <td className="px-4 py-4 max-w-[220px]">
+      <td className="px-4 py-2 max-w-[220px]">
         {editingComment ? (
           <textarea
             autoFocus
             value={comment}
             onChange={e => setComment(e.target.value)}
-            onBlur={handleBlur}
+            onBlur={() => { setEditingComment(false); onCommentSave(comment) }}
             rows={2}
-            className="w-full border border-[#6c47ff] rounded-lg px-3 py-2 text-sm resize-none focus:outline-none text-[#111111]"
-            placeholder="Add comment..."
+            className="w-full border border-[#6c47ff] rounded-md px-2.5 py-1.5 text-[13px] resize-none focus:outline-none text-[#111111] bg-white"
+            placeholder="Add a comment…"
           />
         ) : (
           <div
             onClick={() => setEditingComment(true)}
-            className="min-h-[36px] px-3 py-2 rounded-lg cursor-text hover:bg-[#f5f5f5] transition-colors text-[#666666] text-sm border border-transparent hover:border-[#e5e5e5]"
+            className="min-h-[32px] px-2.5 py-1.5 rounded-md cursor-text text-[#555] hover:bg-[#f0f0f0] transition-colors border border-transparent hover:border-[#e0e0e0]"
           >
-            {comment || <span className="italic text-[#bbb]">Click to add note...</span>}
+            {comment || <span className="text-[#ccc] italic">Add a comment…</span>}
           </div>
         )}
       </td>
-      <td className="px-4 py-4">
-        <div className="flex items-center justify-center gap-2">
-          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#6c47ff] transition-colors">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <td className="px-3 py-3">
+        <div className="flex items-center justify-center gap-1.5">
+          <button onClick={onOpenDetail} title="Open conversation" className="text-[#ccc] hover:text-[#6c47ff] transition-colors">
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
           </button>
           <button
             onClick={onMarkCritical}
             title={isCritical ? 'Already critical' : 'Mark as critical'}
-            className={`transition-colors ${isCritical ? 'text-red-500' : 'text-[#aaa] hover:text-red-500'}`}
+            className={`transition-colors ${isCritical ? 'text-[#cc0000]' : 'text-[#ccc] hover:text-[#cc0000]'}`}
           >
-            <svg className="w-4 h-4" fill={isCritical ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-3.5 h-3.5" fill={isCritical ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </button>
