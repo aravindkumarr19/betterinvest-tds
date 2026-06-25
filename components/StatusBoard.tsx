@@ -11,21 +11,8 @@ const POCS = ['All', 'Aravind', 'Meenakshi', 'Induma', 'DK']
 const STATUSES_FILTER = ['All', 'Filed', 'In Process', 'Not filed', 'No TDS Till now', 'Refunded to Investors']
 const CHECKPOINTS = ['All', 'Challan Pending', 'Form 26Q Pending', 'Form 16A Pending']
 
-// Solid pill colours for quarter group headers
-const Q_PILL = {
-  Q1: 'bg-blue-500 text-white',
-  Q2: 'bg-emerald-500 text-white',
-  Q3: 'bg-orange-500 text-white',
-  Q4: 'bg-violet-500 text-white',
-} as const
-
-// Right-border separator colour per quarter (last sub-col of each group)
-const Q_SEP = {
-  Q1: 'border-blue-100',
-  Q2: 'border-emerald-100',
-  Q3: 'border-orange-100',
-  Q4: 'border-violet-100',
-} as const
+// Right-border separator for quarter group columns (summary table)
+const Q_SEP = 'border-[#e5e5e5]'
 
 type CheckboxField = 'challan_done' | 'form_26q_done' | 'form_16a_done'
 
@@ -399,11 +386,9 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
           <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-36 align-bottom whitespace-nowrap">
             Overall Status
           </th>
-          {(Object.keys(Q_LABELS) as Quarter[]).map(q => (
-            <th key={q} colSpan={3} className="text-center px-3 pt-3 pb-2 border-r border-[#e5e5e5]">
-              <span className={`inline-block px-3 py-1 rounded-full text-[13px] font-semibold ${Q_PILL[q]}`}>
-                {Q_LABELS[q]}
-              </span>
+          {(Object.keys(Q_LABELS) as Quarter[]).map((q, qi) => (
+            <th key={q} colSpan={3} className={`text-center px-3 pt-3 pb-2 border-r border-[#e5e5e5] ${qi > 0 ? 'border-l-2 border-l-[#e5e5e5]' : ''}`}>
+              <span className="text-sm font-semibold text-[#444]">{q}</span>
             </th>
           ))}
           <th rowSpan={2} className="text-center px-4 py-4 font-semibold text-[#666666] w-20 align-bottom">
@@ -415,7 +400,7 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
           {(Object.keys(Q_LABELS) as Quarter[]).map(q =>
             (['C', '26Q', '16A'] as const).map((sub, i) => (
               <th key={`${q}-${sub}`}
-                className={`text-center px-3 pb-3 pt-1 text-xs font-medium text-[#999] w-16 ${i === 2 ? `border-r ${Q_SEP[q]}` : ''}`}
+                className={`text-center px-3 pb-3 pt-1 text-xs font-medium text-[#999] w-16 ${i === 2 ? `border-r ${Q_SEP}` : ''}`}
               >
                 {sub}
               </th>
@@ -499,11 +484,13 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
           fields.map((field, fi) => (
             <td
               key={`${q}-${field}`}
-              className={`px-2 py-4 text-center ${fi === 2 ? `border-r ${Q_SEP[q]}` : ''}`}
+              className={`px-2 py-4 text-center ${fi === 2 ? `border-r ${Q_SEP}` : ''}`}
             >
-              <CheckCircle
+              <input
+                type="checkbox"
                 checked={ph.quarters[q]?.[field] ?? false}
-                onClick={() => onToggle(q, field)}
+                onChange={() => onToggle(q, field)}
+                className="w-4 h-4 cursor-pointer accent-[#111111]"
               />
             </td>
           ))
