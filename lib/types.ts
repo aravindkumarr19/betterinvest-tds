@@ -43,6 +43,12 @@ export interface PhWithQuarter extends TdsPh {
   quarterData?: TdsQuarter
 }
 
+export interface PhWithAllQuarters extends TdsPh {
+  quarters: Partial<Record<Quarter, TdsQuarter | null>>
+}
+
+export type TabMode = Quarter | 'Summary'
+
 export interface TdsCritical {
   id: string
   ph_id: string
