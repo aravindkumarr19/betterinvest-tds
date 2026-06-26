@@ -50,7 +50,7 @@ function statusBadge(status: RecRow['status']) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
-export default function TdsReconciliation({ currentUser }: { currentUser: string }) {
+export default function TdsReconciliation() {
   const [tab, setTab] = useState<Tab>('form16a')
 
   return (
@@ -83,7 +83,7 @@ export default function TdsReconciliation({ currentUser }: { currentUser: string
           ))}
         </div>
 
-        {tab === 'form16a' && <Form16ATab currentUser={currentUser} />}
+        {tab === 'form16a' && <Form16ATab />}
         {tab === 'tracker' && <TrackerTab />}
         {tab === 'reconciliation' && <ReconciliationTab />}
       </div>
@@ -93,7 +93,7 @@ export default function TdsReconciliation({ currentUser }: { currentUser: string
 
 // ─── Tab 1: Form 16A Upload ───────────────────────────────────────────────────
 
-function Form16ATab({ currentUser: _currentUser }: { currentUser: string }) {
+function Form16ATab() {
   const [dragging, setDragging] = useState(false)
   const [extracting, setExtracting] = useState(false)
   const [saving, setSaving] = useState(false)

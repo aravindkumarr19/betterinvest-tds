@@ -32,7 +32,7 @@ function extractFromText(text: string, fileName: string): { pan: string | null; 
 
 async function extractPdf(buffer: Buffer, fileName: string): Promise<{ document_name: string; pan: string | null; tds_amount: number }> {
   // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require('pdf-parse/lib/pdf-parse.js')
+  const pdfParse = require('pdf-parse')
   const data = await pdfParse(buffer)
   const { pan, tds_amount } = extractFromText(data.text, fileName)
   return { document_name: fileName, pan, tds_amount }
