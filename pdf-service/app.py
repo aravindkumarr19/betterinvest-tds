@@ -29,6 +29,10 @@ def extract_from_pdf(pdf_path):
                 break
     return {"filename": os.path.basename(pdf_path), "pan": deductee_pan, "tds_amount": tds_amount}
 
+@app.route("/health")
+def health():
+    return jsonify({"status": "ok"})
+
 @app.route("/extract", methods=["POST"])
 def extract():
     file = request.files.get("file")
