@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 
-// pdfjs-dist (used internally by pdf-parse) references DOMMatrix which doesn't
-// exist in Node.js. Polyfill it before pdf-parse is ever require()'d.
+// pdfjs-dist (used by pdf-parse) references the browser-only DOMMatrix API.
+// Polyfill it at module scope before pdf-parse is loaded.
 if (typeof (globalThis as Record<string, unknown>).DOMMatrix === 'undefined') {
   class DOMMatrix {
     a = 1; b = 0; c = 0; d = 1; e = 0; f = 0
@@ -30,6 +30,14 @@ if (typeof (globalThis as Record<string, unknown>).DOMMatrix === 'undefined') {
   }
   (globalThis as Record<string, unknown>).DOMMatrix = DOMMatrix
 }
+
+// Require at module scope so Next.js bundler doesn't mangle the call inside
+// an async function (which causes "i is not a function" in minified output).
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const _pdfParseRaw = require('pdf-parse')
+// pdf-parse may expose the function as the export itself OR via .default
+const pdfParse: (buf: Buffer) => Promise<{ text: string }> =
+  typeof _pdfParseRaw === 'function' ? _pdfParseRaw : _pdfParseRaw.default
 
 const PAN_REGEX = /[A-Z]{5}[0-9]{4}[A-Z]/
 const DECIMAL_REGEX = /(\d{1,3}(?:,?\d{3})*\.\d{2})/g
@@ -61,8 +69,6 @@ function extractFromText(text: string): { pan: string | null; tds_amount: number
 }
 
 async function extractPdf(buffer: Buffer, fileName: string): Promise<{ document_name: string; pan: string | null; tds_amount: number }> {
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require('pdf-parse')
   const data = await pdfParse(buffer)
   const { pan, tds_amount } = extractFromText(data.text)
   return { document_name: fileName, pan, tds_amount }
@@ -87,8 +93,7 @@ export async function POST(request: Request) {
 
       if (name.endsWith('.pdf')) {
         try {
-          const result = await extractPdf(buffer, file.name)
-          rows.push(result)
+          rows.push(await extractPdf(buffer, file.name))
         } catch (e) {
           failed.push({ file: file.name, error: String(e) })
         }
@@ -97,12 +102,10 @@ export async function POST(request: Request) {
           const JSZip = (await import('jszip')).default
           const zip = await JSZip.loadAsync(buffer)
           for (const [zipFileName, zipEntry] of Object.entries(zip.files)) {
-            if (zipEntry.dir) continue
-            if (!zipFileName.toLowerCase().endsWith('.pdf')) continue
+            if (zipEntry.dir || !zipFileName.toLowerCase().endsWith('.pdf')) continue
             try {
               const pdfBuffer = Buffer.from(await zipEntry.async('arraybuffer'))
-              const result = await extractPdf(pdfBuffer, zipFileName)
-              rows.push(result)
+              rows.push(await extractPdf(pdfBuffer, zipFileName))
             } catch (e) {
               failed.push({ file: zipFileName, error: String(e) })
             }
