@@ -1,36 +1,32 @@
 import { NextResponse } from 'next/server'
-import { execSync } from 'child_process'
-import { writeFileSync, unlinkSync, existsSync } from 'fs'
-import { join } from 'path'
-import { tmpdir } from 'os'
 
-function safeName(name) {
-  return name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 200)
-}
-
-async function extractWithPython(buffer, originalName) {
-  const fileName = `${Date.now()}_${safeName(originalName)}`
-  const tmpPath = join(tmpdir(), fileName)
-  const scriptPath = join(process.cwd(), 'scripts', 'extract_form16a.py')
-
-  try {
-    writeFileSync(tmpPath, buffer)
-    const stdout = execSync(`python3 "${scriptPath}" "${tmpPath}"`, {
-      timeout: 30000,
-      encoding: 'utf8',
-    })
-    const result = JSON.parse(stdout.trim())
-    return {
-      document_name: originalName,
-      pan: result.pan === 'NOT_FOUND' ? null : result.pan,
-      tds_amount: parseFloat(result.tds_amount) || 0,
-    }
-  } finally {
-    if (existsSync(tmpPath)) unlinkSync(tmpPath)
+async function extractWithPython(buffer, originalName, baseUrl) {
+  const response = await fetch(`${baseUrl}/api/extract_form16a`, {
+    method: 'POST',
+    body: buffer,
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      'Content-Length': String(buffer.length),
+    },
+  })
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(`Python function error ${response.status}: ${text}`)
+  }
+  const result = await response.json()
+  return {
+    document_name: originalName,
+    pan: result.pan === 'NOT_FOUND' ? null : result.pan,
+    tds_amount: parseFloat(result.tds_amount) || 0,
   }
 }
 
 export async function POST(request) {
+  // Derive base URL from incoming request so it works across deployments
+  const host = request.headers.get('host') || 'localhost:3000'
+  const protocol = host.includes('localhost') ? 'http' : 'https'
+  const baseUrl = `${protocol}://${host}`
+
   try {
     const formData = await request.formData()
     const files = formData.getAll('files')
@@ -49,7 +45,7 @@ export async function POST(request) {
 
       if (name.endsWith('.pdf')) {
         try {
-          rows.push(await extractWithPython(buffer, file.name))
+          rows.push(await extractWithPython(buffer, file.name, baseUrl))
         } catch (e) {
           failed.push({ file: file.name, error: String(e) })
         }
@@ -61,8 +57,7 @@ export async function POST(request) {
             if (zipEntry.dir || !zipFileName.toLowerCase().endsWith('.pdf')) continue
             try {
               const pdfBuffer = Buffer.from(await zipEntry.async('arraybuffer'))
-              const baseName = zipFileName.split('/').pop() || zipFileName
-              const result = await extractWithPython(pdfBuffer, baseName)
+              const result = await extractWithPython(pdfBuffer, zipFileName, baseUrl)
               result.document_name = zipFileName
               rows.push(result)
             } catch (e) {
