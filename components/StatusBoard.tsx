@@ -474,14 +474,21 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
         </span>
       </td>
 
-      {/* Quarter columns OR simple dash for Refunded/NoTDS */}
+      {/* Quarter columns OR simple dash for Refunded/NoTDS or has_tds=false */}
       {skipCircles ? (
         <td colSpan={12} className="px-4 py-4 text-center border-r border-[#e5e5e5]">
           <span className="text-[#aaa]">—</span>
         </td>
       ) : (
-        (Object.keys(Q_LABELS) as Quarter[]).map(q =>
-          fields.map((field, fi) => (
+        (Object.keys(Q_LABELS) as Quarter[]).flatMap(q => {
+          if (ph.quarters[q]?.has_tds === false) {
+            return [
+              <td key={`${q}-notds`} colSpan={3} className={`px-2 py-4 text-center border-r ${Q_SEP}`}>
+                <span className="text-[#aaa]">—</span>
+              </td>
+            ]
+          }
+          return fields.map((field, fi) => (
             <td
               key={`${q}-${field}`}
               className={`px-2 py-4 text-center ${fi === 2 ? `border-r ${Q_SEP}` : ''}`}
@@ -494,7 +501,7 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
               />
             </td>
           ))
-        )
+        })
       )}
 
       {/* Actions */}
@@ -605,15 +612,21 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
           {ph.overall_status}
         </span>
       </td>
-      <td className="px-4 py-4 text-center">
-        <CheckCircle checked={ph.quarterData?.challan_done ?? false} onClick={() => onToggle('challan_done')} />
-      </td>
-      <td className="px-4 py-4 text-center">
-        <CheckCircle checked={ph.quarterData?.form_26q_done ?? false} onClick={() => onToggle('form_26q_done')} />
-      </td>
-      <td className="px-4 py-4 text-center">
-        <CheckCircle checked={ph.quarterData?.form_16a_done ?? false} onClick={() => onToggle('form_16a_done')} />
-      </td>
+      {ph.quarterData?.has_tds === false ? (
+        <td colSpan={3} className="px-4 py-4 text-center text-[#aaa]">—</td>
+      ) : (
+        <>
+          <td className="px-4 py-4 text-center">
+            <CheckCircle checked={ph.quarterData?.challan_done ?? false} onClick={() => onToggle('challan_done')} />
+          </td>
+          <td className="px-4 py-4 text-center">
+            <CheckCircle checked={ph.quarterData?.form_26q_done ?? false} onClick={() => onToggle('form_26q_done')} />
+          </td>
+          <td className="px-4 py-4 text-center">
+            <CheckCircle checked={ph.quarterData?.form_16a_done ?? false} onClick={() => onToggle('form_16a_done')} />
+          </td>
+        </>
+      )}
       <td className="px-4 py-4 max-w-[220px]">
         {editingComment ? (
           <textarea

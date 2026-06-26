@@ -35,6 +35,7 @@ export interface TdsQuarter {
   challan_done: boolean
   form_26q_done: boolean
   form_16a_done: boolean
+  has_tds: boolean
   comment: string | null
   updated_at: string
 }
