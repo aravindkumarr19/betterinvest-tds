@@ -396,7 +396,7 @@ function TrackerTab() {
 
   function updateCell(id: string, field: 'pan' | 'tds_amount', value: string) {
     setRows(prev => prev.map(r => r.id === id
-      ? { ...r, [field]: field === 'tds_amount' ? (value === '' ? null : parseFloat(value)) : value, _dirty: true }
+      ? { ...r, [field]: field === 'tds_amount' ? (value === '' ? null : parseFloat(value.replace(/[₹,]/g, ''))) : value, _dirty: true }
       : r
     ))
   }
@@ -446,14 +446,24 @@ function TrackerTab() {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
     const newRows: { pan: string; tds_amount: number | null }[] = []
     for (const line of lines) {
-      const parts = line.split(/\t|,/)
-      if (parts.length >= 2) {
-        const pan = parts[0].trim().toUpperCase()
-        const amt = parseFloat(parts[1].trim().replace(/,/g, ''))
-        newRows.push({ pan, tds_amount: isNaN(amt) ? null : amt })
-      } else if (parts.length === 1 && parts[0]) {
-        newRows.push({ pan: parts[0].trim().toUpperCase(), tds_amount: null })
+      // Split on tab first; only fall back to first-comma split for CSV
+      const tabParts = line.split('\t')
+      let pan: string, rawAmt: string | undefined
+      if (tabParts.length >= 2) {
+        pan = tabParts[0].trim().toUpperCase()
+        rawAmt = tabParts.slice(1).join('\t').trim()
+      } else {
+        const commaIdx = line.indexOf(',')
+        if (commaIdx === -1) {
+          newRows.push({ pan: line.trim().toUpperCase(), tds_amount: null })
+          continue
+        }
+        pan = line.slice(0, commaIdx).trim().toUpperCase()
+        rawAmt = line.slice(commaIdx + 1).trim()
       }
+      const cleaned = rawAmt?.replace(/[₹,\s]/g, '') ?? ''
+      const amt = parseFloat(cleaned)
+      newRows.push({ pan, tds_amount: isNaN(amt) ? null : amt })
     }
     if (!newRows.length) return
     const res = await fetch('/api/tds/tracker', {
