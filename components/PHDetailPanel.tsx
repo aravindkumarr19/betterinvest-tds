@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import type { TdsPh, TdsQuarter, TdsMessage, Quarter } from '@/lib/types'
-import { QUARTERS, STATUS_COLORS, TEAM_MEMBERS } from '@/lib/types'
+import { QUARTERS, TEAM_MEMBERS } from '@/lib/types'
+import StatusDropdown from './StatusDropdown'
 
 interface Props {
   ph: TdsPh
@@ -10,8 +11,6 @@ interface Props {
   onClose: () => void
   onUpdate: () => void
 }
-
-const STATUSES = ['Filed', 'In Process', 'Not filed', 'No TDS Till now', 'Refunded to Investors', 'Filed, In Process']
 
 function getDisplayName(email: string): string {
   const map: Record<string, string> = {
@@ -113,16 +112,6 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
     }))
   }
 
-  async function updateStatus(newStatus: string) {
-    setStatus(newStatus)
-    await fetch(`/api/tds/ph/${ph.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ overall_status: newStatus }),
-    })
-    onUpdate()
-  }
-
   function handleMessageChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     const val = e.target.value
     setNewMessage(val)
@@ -193,22 +182,18 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
             <h2 className="font-semibold text-[#111111] text-base leading-tight truncate">{ph.ph_name}</h2>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <span className="text-xs text-[#666666]">{ph.poc}</span>
-              <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[ph.overall_status] || 'bg-gray-100 text-gray-600'}`}>
-                {status}
-              </span>
+              <StatusDropdown
+                phId={ph.id}
+                status={status}
+                onStatusChange={newStatus => { setStatus(newStatus); onUpdate() }}
+                size="xs"
+              />
               {ph.is_critical && (
                 <span className="text-[11px] px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">Critical</span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <select
-              value={status}
-              onChange={e => updateStatus(e.target.value)}
-              className="text-xs border border-[#e5e5e5] rounded-lg px-2 py-1.5 text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white"
-            >
-              {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
             <button onClick={onClose} className="text-[#666666] hover:text-[#111111] transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />

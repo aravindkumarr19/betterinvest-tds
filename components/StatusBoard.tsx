@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import type { PhWithQuarter, PhWithAllQuarters, TdsCritical, Quarter, TabMode } from '@/lib/types'
-import { QUARTERS, STATUS_COLORS } from '@/lib/types'
+import { QUARTERS } from '@/lib/types'
+import StatusDropdown from './StatusDropdown'
 
 const PHDetailPanel = dynamic(() => import('./PHDetailPanel'), { ssr: false })
 
@@ -76,10 +77,10 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
       setSummaryPhs(merged)
       setStats({
         total: merged.length,
-        filed: merged.filter(p => p.overall_status === 'Filed').length,
+        filed: merged.filter(p => p.overall_status.includes('Filed')).length,
         inProcess: merged.filter(p => p.overall_status.includes('In Process')).length,
-        notFiled: merged.filter(p => p.overall_status === 'Not filed').length,
-        refunded: merged.filter(p => p.overall_status === 'Refunded to Investors').length,
+        notFiled: merged.filter(p => p.overall_status.includes('Not filed')).length,
+        refunded: merged.filter(p => p.overall_status.includes('Refunded to Investors')).length,
         critical: crits.length,
       })
     } else {
@@ -89,10 +90,10 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
         setPhs(data)
         setStats({
           total: data.length,
-          filed: data.filter(p => p.overall_status === 'Filed').length,
+          filed: data.filter(p => p.overall_status.includes('Filed')).length,
           inProcess: data.filter(p => p.overall_status.includes('In Process')).length,
-          notFiled: data.filter(p => p.overall_status === 'Not filed').length,
-          refunded: data.filter(p => p.overall_status === 'Refunded to Investors').length,
+          notFiled: data.filter(p => p.overall_status.includes('Not filed')).length,
+          refunded: data.filter(p => p.overall_status.includes('Refunded to Investors')).length,
           critical: crits.length,
         })
       }
@@ -185,6 +186,22 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
       body: JSON.stringify({ ph_id: phId }),
     })
     await fetchData()
+  }
+
+  function handleStatusChange(phId: string, newStatus: string) {
+    const updateStatus = <T extends { id: string; overall_status: string }>(arr: T[]): T[] =>
+      arr.map(p => p.id === phId ? { ...p, overall_status: newStatus } : p)
+
+    const updatedSummary = updateStatus(summaryPhs)
+    setSummaryPhs(updatedSummary)
+    setPhs(prev => updateStatus(prev))
+    setStats(s => ({
+      ...s,
+      filed: updatedSummary.filter(p => p.overall_status.includes('Filed')).length,
+      inProcess: updatedSummary.filter(p => p.overall_status.includes('In Process')).length,
+      notFiled: updatedSummary.filter(p => p.overall_status.includes('Not filed')).length,
+      refunded: updatedSummary.filter(p => p.overall_status.includes('Refunded to Investors')).length,
+    }))
   }
 
   // ── Filtering ────────────────────────────────────────────────────────────
@@ -304,6 +321,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
               onOpenDetail={ph => setSelectedPh({ ...ph, quarterData: ph.quarters['Q4'] ?? undefined })}
               onToggle={toggleSummaryCheckbox}
               onMarkCritical={id => markCritical(id)}
+              onStatusChange={handleStatusChange}
             />
           ) : (
             <QuarterTable
@@ -314,6 +332,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
               onToggle={toggleCheckbox}
               onCommentSave={updateComment}
               onMarkCritical={id => markCritical(id)}
+              onStatusChange={handleStatusChange}
             />
           )}
         </div>
@@ -343,13 +362,14 @@ const Q_LABELS: Record<Quarter, string> = {
   Q4: 'Q4 · Jan–Mar',
 }
 
-function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMarkCritical }: {
+function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMarkCritical, onStatusChange }: {
   phs: PhWithAllQuarters[]
   criticalIds: Set<string>
   loading: boolean
   onOpenDetail: (ph: PhWithAllQuarters) => void
   onToggle: (ph: PhWithAllQuarters, quarter: Quarter, field: CheckboxField) => void
   onMarkCritical: (id: string) => void
+  onStatusChange: (phId: string, newStatus: string) => void
 }) {
   return (
     <table className="w-full" style={{ minWidth: 1140, fontSize: 14 }}>
@@ -402,6 +422,7 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
               onOpenDetail={() => onOpenDetail(ph)}
               onToggle={(quarter, field) => onToggle(ph, quarter, field)}
               onMarkCritical={() => onMarkCritical(ph.id)}
+              onStatusChange={(newStatus) => onStatusChange(ph.id, newStatus)}
             />
           ))
         )}
@@ -410,13 +431,14 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
   )
 }
 
-function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritical }: {
+function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritical, onStatusChange }: {
   ph: PhWithAllQuarters
   idx: number
   isCritical: boolean
   onOpenDetail: () => void
   onToggle: (quarter: Quarter, field: CheckboxField) => void
   onMarkCritical: () => void
+  onStatusChange: (newStatus: string) => void
 }) {
   const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'
   const fields: CheckboxField[] = ['challan_done', 'form_26q_done', 'form_16a_done']
@@ -448,9 +470,7 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
 
       {/* Overall Status */}
       <td className="px-4 py-4 border-r border-[#e5e5e5]">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[ph.overall_status] || 'bg-gray-100 text-gray-600'}`}>
-          {ph.overall_status}
-        </span>
+        <StatusDropdown phId={ph.id} status={ph.overall_status} onStatusChange={onStatusChange} />
       </td>
 
       {/* Quarter columns OR simple dash for Refunded/NoTDS or has_tds=false */}
@@ -508,7 +528,7 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
 
 // ── Quarter Table ──────────────────────────────────────────────────────────
 
-function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCommentSave, onMarkCritical }: {
+function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCommentSave, onMarkCritical, onStatusChange }: {
   phs: PhWithQuarter[]
   criticalIds: Set<string>
   loading: boolean
@@ -516,6 +536,7 @@ function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCom
   onToggle: (ph: PhWithQuarter, field: CheckboxField) => void
   onCommentSave: (ph: PhWithQuarter, comment: string) => void
   onMarkCritical: (id: string) => void
+  onStatusChange: (phId: string, newStatus: string) => void
 }) {
   return (
     <table className="w-full" style={{ fontSize: 14 }}>
@@ -547,6 +568,7 @@ function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCom
               onToggle={field => onToggle(ph, field)}
               onCommentSave={c => onCommentSave(ph, c)}
               onMarkCritical={() => onMarkCritical(ph.id)}
+              onStatusChange={newStatus => onStatusChange(ph.id, newStatus)}
             />
           ))
         )}
@@ -555,7 +577,7 @@ function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCom
   )
 }
 
-function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, onMarkCritical }: {
+function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, onMarkCritical, onStatusChange }: {
   ph: PhWithQuarter
   idx: number
   isCritical: boolean
@@ -563,6 +585,7 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
   onToggle: (field: CheckboxField) => void
   onCommentSave: (comment: string) => void
   onMarkCritical: () => void
+  onStatusChange: (newStatus: string) => void
 }) {
   const [editingComment, setEditingComment] = useState(false)
   const [comment, setComment] = useState(ph.quarterData?.comment ?? '')
@@ -587,9 +610,7 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
       </td>
       <td className="px-4 py-4 text-[#666666]">{ph.poc}</td>
       <td className="px-4 py-4">
-        <span className={`text-xs px-2 py-0.5 rounded-full font-medium whitespace-nowrap ${STATUS_COLORS[ph.overall_status] || 'bg-gray-100 text-gray-600'}`}>
-          {ph.overall_status}
-        </span>
+        <StatusDropdown phId={ph.id} status={ph.overall_status} onStatusChange={onStatusChange} />
       </td>
       {ph.quarterData?.has_tds === false
         ? [<td key="dash" colSpan={3} className="px-4 py-4 text-center text-[#aaa]">—</td>]
