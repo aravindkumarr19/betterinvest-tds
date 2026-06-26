@@ -396,7 +396,7 @@ function TrackerTab() {
 
   function updateCell(id: string, field: 'pan' | 'tds_amount', value: string) {
     setRows(prev => prev.map(r => r.id === id
-      ? { ...r, [field]: field === 'tds_amount' ? (value === '' ? null : parseFloat(value.replace(/[₹,]/g, ''))) : value, _dirty: true }
+      ? { ...r, [field]: field === 'tds_amount' ? (value === '' ? null : parseFloat(value.replace(/[^0-9.-]/g, ''))) : value, _dirty: true }
       : r
     ))
   }
@@ -461,7 +461,7 @@ function TrackerTab() {
         pan = line.slice(0, commaIdx).trim().toUpperCase()
         rawAmt = line.slice(commaIdx + 1).trim()
       }
-      const cleaned = rawAmt?.replace(/[₹,\s]/g, '') ?? ''
+      const cleaned = (rawAmt ?? '').replace(/[^0-9.-]/g, '')
       const amt = parseFloat(cleaned)
       newRows.push({ pan, tds_amount: isNaN(amt) ? null : amt })
     }
