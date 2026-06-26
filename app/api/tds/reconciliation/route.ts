@@ -7,6 +7,7 @@ type ReconciliationRow = {
   form16a_amount: number | null
   difference: number | null
   status: 'Matched' | 'TDS Mismatch' | 'Form 16A Not Received'
+  coverage: 'Received' | 'Not Received'
 }
 
 const STATUS_ORDER = { 'TDS Mismatch': 0, 'Form 16A Not Received': 1, 'Matched': 2 }
@@ -22,7 +23,7 @@ export async function GET() {
   if (e1) return NextResponse.json({ error: e1.message }, { status: 500 })
   if (e2) return NextResponse.json({ error: e2.message }, { status: 500 })
 
-  // Aggregate by PAN (sum)
+  // Aggregate by PAN (sum amounts per PAN)
   const trackerMap = new Map<string, number>()
   for (const row of trackers || []) {
     if (!row.pan) continue
@@ -35,12 +36,16 @@ export async function GET() {
     form16aMap.set(row.pan, (form16aMap.get(row.pan) || 0) + (row.tds_amount || 0))
   }
 
-  const allPans = Array.from(new Set(Array.from(trackerMap.keys()).concat(Array.from(form16aMap.keys()))))
+  const allPans = Array.from(new Set(
+    Array.from(trackerMap.keys()).concat(Array.from(form16aMap.keys()))
+  ))
+
   const rows: ReconciliationRow[] = []
 
   for (const pan of allPans) {
     const tracker = trackerMap.get(pan) ?? null
     const form16a = form16aMap.get(pan) ?? null
+    const coverage: ReconciliationRow['coverage'] = form16a !== null ? 'Received' : 'Not Received'
     let status: ReconciliationRow['status']
     let difference: number | null = null
 
@@ -51,7 +56,7 @@ export async function GET() {
       status = difference <= 5 ? 'Matched' : 'TDS Mismatch'
     }
 
-    rows.push({ pan, tracker_amount: tracker, form16a_amount: form16a, difference, status })
+    rows.push({ pan, tracker_amount: tracker, form16a_amount: form16a, difference, status, coverage })
   }
 
   rows.sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status])
