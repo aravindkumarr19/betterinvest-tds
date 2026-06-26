@@ -1,43 +1,5 @@
 import { NextResponse } from 'next/server'
-
-// pdfjs-dist (used by pdf-parse) references the browser-only DOMMatrix API.
-// Polyfill it at module scope before pdf-parse is loaded.
-if (typeof (globalThis as Record<string, unknown>).DOMMatrix === 'undefined') {
-  class DOMMatrix {
-    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0
-    m11 = 1; m12 = 0; m13 = 0; m14 = 0
-    m21 = 0; m22 = 1; m23 = 0; m24 = 0
-    m31 = 0; m32 = 0; m33 = 1; m34 = 0
-    m41 = 0; m42 = 0; m43 = 0; m44 = 1
-    is2D = true; isIdentity = true
-    constructor(init?: string | number[]) {
-      if (Array.isArray(init) && init.length === 6) {
-        [this.a, this.b, this.c, this.d, this.e, this.f] = init
-        this.m11 = init[0]; this.m12 = init[1]
-        this.m21 = init[2]; this.m22 = init[3]
-        this.m41 = init[4]; this.m42 = init[5]
-      }
-    }
-    multiply() { return this }
-    translate() { return this }
-    scale() { return this }
-    rotate() { return this }
-    inverse() { return this }
-    transformPoint(p: { x: number; y: number }) { return p }
-    static fromMatrix(m: unknown) { return new DOMMatrix(m as number[]) }
-    static fromFloat32Array(a: Float32Array) { return new DOMMatrix(Array.from(a)) }
-    static fromFloat64Array(a: Float64Array) { return new DOMMatrix(Array.from(a)) }
-  }
-  (globalThis as Record<string, unknown>).DOMMatrix = DOMMatrix
-}
-
-// Require at module scope so Next.js bundler doesn't mangle the call inside
-// an async function (which causes "i is not a function" in minified output).
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const _pdfParseRaw = require('pdf-parse')
-// pdf-parse may expose the function as the export itself OR via .default
-const pdfParse: (buf: Buffer) => Promise<{ text: string }> =
-  typeof _pdfParseRaw === 'function' ? _pdfParseRaw : _pdfParseRaw.default
+import { extractText } from 'unpdf'
 
 const PAN_REGEX = /[A-Z]{5}[0-9]{4}[A-Z]/
 const DECIMAL_REGEX = /(\d{1,3}(?:,?\d{3})*\.\d{2})/g
@@ -46,11 +8,11 @@ function parseDecimal(s: string): number {
   return parseFloat(s.replace(/,/g, ''))
 }
 
-function extractFromText(text: string): { pan: string | null; tds_amount: number } {
-  const panMatch = text.match(PAN_REGEX)
+function extractFromText(rawText: string): { pan: string | null; tds_amount: number } {
+  const panMatch = rawText.match(PAN_REGEX)
   const pan = panMatch ? panMatch[0] : null
 
-  const lines = text.split('\n')
+  const lines = rawText.split('\n')
   let total = 0
   for (const line of lines) {
     const trimmed = line.trim()
@@ -68,9 +30,13 @@ function extractFromText(text: string): { pan: string | null; tds_amount: number
   return { pan, tds_amount: total }
 }
 
-async function extractPdf(buffer: Buffer, fileName: string): Promise<{ document_name: string; pan: string | null; tds_amount: number }> {
-  const data = await pdfParse(buffer)
-  const { pan, tds_amount } = extractFromText(data.text)
+async function extractPdf(
+  buffer: Buffer,
+  fileName: string,
+): Promise<{ document_name: string; pan: string | null; tds_amount: number }> {
+  const { text } = await extractText(new Uint8Array(buffer), { mergePages: true })
+  const fullText = Array.isArray(text) ? text.join('\n') : (text as string)
+  const { pan, tds_amount } = extractFromText(fullText)
   return { document_name: fileName, pan, tds_amount }
 }
 
