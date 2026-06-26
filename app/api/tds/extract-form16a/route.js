@@ -3,25 +3,32 @@ import { NextResponse } from 'next/server'
 // Polyfill DOMMatrix before pdfjs-dist loads (its module scope calls new DOMMatrix())
 if (typeof globalThis.DOMMatrix === 'undefined') {
   globalThis.DOMMatrix = class DOMMatrix {
-    constructor() {
+    constructor(init) {
       this.a=1;this.b=0;this.c=0;this.d=1;this.e=0;this.f=0
       this.m11=1;this.m12=0;this.m13=0;this.m14=0
       this.m21=0;this.m22=1;this.m23=0;this.m24=0
       this.m31=0;this.m32=0;this.m33=1;this.m34=0
       this.m41=0;this.m42=0;this.m43=0;this.m44=1
       this.is2D=true;this.isIdentity=true
+      if (Array.isArray(init) && init.length === 6) {
+        [this.a,this.b,this.c,this.d,this.e,this.f]=init
+        this.m11=init[0];this.m12=init[1];this.m21=init[2];this.m22=init[3];this.m41=init[4];this.m42=init[5]
+      }
     }
     invertSelf(){return this}
     preMultiplySelf(){return this}
     multiplySelf(){return this}
+    scaleSelf(){return this}
+    translateSelf(){return this}
+    rotateSelf(){return this}
     translate(){return new globalThis.DOMMatrix()}
     scale(){return new globalThis.DOMMatrix()}
     rotate(){return new globalThis.DOMMatrix()}
     inverse(){return new globalThis.DOMMatrix()}
     transformPoint(p){return p||{x:0,y:0,z:0,w:1}}
     static fromMatrix(){return new globalThis.DOMMatrix()}
-    static fromFloat32Array(){return new globalThis.DOMMatrix()}
-    static fromFloat64Array(){return new globalThis.DOMMatrix()}
+    static fromFloat32Array(a){return new globalThis.DOMMatrix(Array.from(a))}
+    static fromFloat64Array(a){return new globalThis.DOMMatrix(Array.from(a))}
   }
 }
 
@@ -44,7 +51,8 @@ async function getPdfjs() {
   if (_pdfjs) return _pdfjs
   const mod = await import('pdfjs-dist/legacy/build/pdf.mjs')
   _pdfjs = mod
-  _pdfjs.GlobalWorkerOptions.workerSrc = ''
+  // In Node.js, pdfjs auto-sets #isWorkerDisabled=true and workerSrc="./pdf.worker.mjs"
+  // (see PDFWorker static initializer). Do NOT override workerSrc to '' — that breaks it.
   return _pdfjs
 }
 
