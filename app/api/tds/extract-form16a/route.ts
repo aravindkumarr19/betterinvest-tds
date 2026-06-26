@@ -1,5 +1,36 @@
 import { NextResponse } from 'next/server'
 
+// pdfjs-dist (used internally by pdf-parse) references DOMMatrix which doesn't
+// exist in Node.js. Polyfill it before pdf-parse is ever require()'d.
+if (typeof (globalThis as Record<string, unknown>).DOMMatrix === 'undefined') {
+  class DOMMatrix {
+    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0
+    m11 = 1; m12 = 0; m13 = 0; m14 = 0
+    m21 = 0; m22 = 1; m23 = 0; m24 = 0
+    m31 = 0; m32 = 0; m33 = 1; m34 = 0
+    m41 = 0; m42 = 0; m43 = 0; m44 = 1
+    is2D = true; isIdentity = true
+    constructor(init?: string | number[]) {
+      if (Array.isArray(init) && init.length === 6) {
+        [this.a, this.b, this.c, this.d, this.e, this.f] = init
+        this.m11 = init[0]; this.m12 = init[1]
+        this.m21 = init[2]; this.m22 = init[3]
+        this.m41 = init[4]; this.m42 = init[5]
+      }
+    }
+    multiply() { return this }
+    translate() { return this }
+    scale() { return this }
+    rotate() { return this }
+    inverse() { return this }
+    transformPoint(p: { x: number; y: number }) { return p }
+    static fromMatrix(m: unknown) { return new DOMMatrix(m as number[]) }
+    static fromFloat32Array(a: Float32Array) { return new DOMMatrix(Array.from(a)) }
+    static fromFloat64Array(a: Float64Array) { return new DOMMatrix(Array.from(a)) }
+  }
+  (globalThis as Record<string, unknown>).DOMMatrix = DOMMatrix
+}
+
 const PAN_REGEX = /[A-Z]{5}[0-9]{4}[A-Z]/
 const DECIMAL_REGEX = /(\d{1,3}(?:,?\d{3})*\.\d{2})/g
 
