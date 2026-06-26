@@ -396,7 +396,7 @@ function TrackerTab() {
 
   function updateCell(id: string, field: 'pan' | 'tds_amount', value: string) {
     setRows(prev => prev.map(r => r.id === id
-      ? { ...r, [field]: field === 'tds_amount' ? (value === '' ? null : parseFloat(value.replace(/[^0-9.-]/g, ''))) : value, _dirty: true }
+      ? { ...r, [field]: field === 'tds_amount' ? (value === '' ? null : parseFloat(value.replace(/₹/g, '').replace(/,/g, '').trim().replace(/[^0-9.-]/g, ''))) : value, _dirty: true }
       : r
     ))
   }
@@ -450,9 +450,8 @@ function TrackerTab() {
       const panMatch = upper.match(/[A-Z]{5}[0-9]{4}[A-Z]/)
       if (!panMatch) continue
       const pan = panMatch[0]
-      // Take everything after the PAN, strip leading separators, then keep only numeric chars
-      const afterPan = line.slice((panMatch.index ?? 0) + 10).replace(/^[\s,\t]+/, '')
-      const cleaned = afterPan.replace(/[^0-9.-]/g, '')
+      const afterPan = line.slice((panMatch.index ?? 0) + 10)
+      const cleaned = afterPan.replace(/₹/g, '').replace(/,/g, '').trim().replace(/[^0-9.-]/g, '')
       const amt = parseFloat(cleaned)
       newRows.push({ pan, tds_amount: isNaN(amt) ? null : amt })
     }
