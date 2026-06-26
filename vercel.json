@@ -2,10 +2,5 @@
   "framework": "nextjs",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "installCommand": "npm install",
-  "functions": {
-    "api/extract_form16a.py": {
-      "runtime": "python3.9"
-    }
-  }
+  "installCommand": "npm install"
 }
