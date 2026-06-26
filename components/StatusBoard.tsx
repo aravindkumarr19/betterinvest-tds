@@ -28,27 +28,6 @@ function getDisplayName(email: string): string {
   return map[email] || email.split('@')[0]
 }
 
-// ── Visual check indicator (replaces checkbox) ─────────────────────────────
-function CheckCircle({ checked, onClick }: { checked: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center justify-center mx-auto transition-transform hover:scale-110 active:scale-95"
-      style={{ width: 28, height: 28 }}
-    >
-      {checked ? (
-        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center shadow-sm">
-          <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-      ) : (
-        <div className="w-6 h-6 rounded-full border-2 border-gray-200 bg-white hover:border-gray-300 transition-colors" />
-      )}
-    </button>
-  )
-}
-
 // ── Main component ─────────────────────────────────────────────────────────
 export default function StatusBoard({ currentUser }: { currentUser: string }) {
   const [selectedTab, setSelectedTab] = useState<TabMode>('Summary')
@@ -612,21 +591,20 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
           {ph.overall_status}
         </span>
       </td>
-      {ph.quarterData?.has_tds === false ? (
-        <td colSpan={3} className="px-4 py-4 text-center text-[#aaa]">—</td>
-      ) : (
-        <>
-          <td className="px-4 py-4 text-center">
-            <CheckCircle checked={ph.quarterData?.challan_done ?? false} onClick={() => onToggle('challan_done')} />
-          </td>
-          <td className="px-4 py-4 text-center">
-            <CheckCircle checked={ph.quarterData?.form_26q_done ?? false} onClick={() => onToggle('form_26q_done')} />
-          </td>
-          <td className="px-4 py-4 text-center">
-            <CheckCircle checked={ph.quarterData?.form_16a_done ?? false} onClick={() => onToggle('form_16a_done')} />
-          </td>
-        </>
-      )}
+      {ph.quarterData?.has_tds === false
+        ? [<td key="dash" colSpan={3} className="px-4 py-4 text-center text-[#aaa]">—</td>]
+        : [
+            <td key="challan" className="px-4 py-4 text-center">
+              <input type="checkbox" checked={ph.quarterData?.challan_done ?? false} onChange={() => onToggle('challan_done')} className="w-4 h-4 cursor-pointer accent-[#111111]" />
+            </td>,
+            <td key="26q" className="px-4 py-4 text-center">
+              <input type="checkbox" checked={ph.quarterData?.form_26q_done ?? false} onChange={() => onToggle('form_26q_done')} className="w-4 h-4 cursor-pointer accent-[#111111]" />
+            </td>,
+            <td key="16a" className="px-4 py-4 text-center">
+              <input type="checkbox" checked={ph.quarterData?.form_16a_done ?? false} onChange={() => onToggle('form_16a_done')} className="w-4 h-4 cursor-pointer accent-[#111111]" />
+            </td>,
+          ]
+      }
       <td className="px-4 py-4 max-w-[220px]">
         {editingComment ? (
           <textarea
