@@ -446,22 +446,13 @@ function TrackerTab() {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
     const newRows: { pan: string; tds_amount: number | null }[] = []
     for (const line of lines) {
-      // Split on tab first; only fall back to first-comma split for CSV
-      const tabParts = line.split('\t')
-      let pan: string, rawAmt: string | undefined
-      if (tabParts.length >= 2) {
-        pan = tabParts[0].trim().toUpperCase()
-        rawAmt = tabParts.slice(1).join('\t').trim()
-      } else {
-        const commaIdx = line.indexOf(',')
-        if (commaIdx === -1) {
-          newRows.push({ pan: line.trim().toUpperCase(), tds_amount: null })
-          continue
-        }
-        pan = line.slice(0, commaIdx).trim().toUpperCase()
-        rawAmt = line.slice(commaIdx + 1).trim()
-      }
-      const cleaned = (rawAmt ?? '').replace(/[^0-9.-]/g, '')
+      const upper = line.toUpperCase()
+      const panMatch = upper.match(/[A-Z]{5}[0-9]{4}[A-Z]/)
+      if (!panMatch) continue
+      const pan = panMatch[0]
+      // Take everything after the PAN, strip leading separators, then keep only numeric chars
+      const afterPan = line.slice((panMatch.index ?? 0) + 10).replace(/^[\s,\t]+/, '')
+      const cleaned = afterPan.replace(/[^0-9.-]/g, '')
       const amt = parseFloat(cleaned)
       newRows.push({ pan, tds_amount: isNaN(amt) ? null : amt })
     }
