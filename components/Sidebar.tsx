@@ -25,6 +25,15 @@ const NAV = [
       </svg>
     ),
   },
+  {
+    href: '/tds-reconciliation',
+    label: 'TDS Reconciliation',
+    icon: (
+      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 6l9-3 9 3M3 6v14l9 3 9-3V6M3 6l9 3 9-3M12 9v14" />
+      </svg>
+    ),
+  },
 ]
 
 function getDisplayName(email: string): string {
