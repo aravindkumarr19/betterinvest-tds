@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-import re, os, tempfile, pdfplumber
+import re, os, io, tempfile, zipfile, pdfplumber
 
 app = Flask(__name__)
 PAN_REGEX = r'[A-Z]{5}[0-9]{4}[A-Z]'
@@ -41,6 +41,28 @@ def extract():
         result = extract_from_pdf(tmp.name)
         os.unlink(tmp.name)
     return jsonify(result)
+
+@app.route("/extract-batch", methods=["POST"])
+def extract_batch():
+    file = request.files.get("file")
+    results = []
+    with zipfile.ZipFile(io.BytesIO(file.read())) as zf:
+        for entry in zf.infolist():
+            if entry.is_dir() or not entry.filename.lower().endswith('.pdf'):
+                continue
+            original_name = os.path.basename(entry.filename)
+            try:
+                pdf_bytes = zf.read(entry.filename)
+                with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp:
+                    tmp.write(pdf_bytes)
+                    tmp_path = tmp.name
+                result = extract_from_pdf(tmp_path)
+                os.unlink(tmp_path)
+                result['filename'] = original_name
+                results.append(result)
+            except Exception as e:
+                results.append({"filename": original_name, "pan": "NOT_FOUND", "tds_amount": "0.00", "error": str(e)})
+    return jsonify(results)
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

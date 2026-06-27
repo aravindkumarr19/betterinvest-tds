@@ -2,29 +2,6 @@ import { NextResponse } from 'next/server'
 
 const PDF_SERVICE_URL = process.env.PDF_SERVICE_URL || 'https://betterinvest-tds.onrender.com'
 
-async function extractPdf(pdfBuffer, fileName) {
-  const formData = new FormData()
-  formData.append('file', new Blob([pdfBuffer], { type: 'application/pdf' }), fileName)
-
-  const response = await fetch(`${PDF_SERVICE_URL}/extract`, {
-    method: 'POST',
-    body: formData,
-    signal: AbortSignal.timeout(60_000),
-  })
-
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`PDF service error ${response.status}: ${text}`)
-  }
-
-  const result = await response.json()
-  return {
-    document_name: fileName,
-    pan: result.pan === 'NOT_FOUND' ? null : result.pan,
-    tds_amount: parseFloat(result.tds_amount) || 0,
-  }
-}
-
 export async function POST(request) {
   try {
     const formData = await request.formData()
@@ -34,48 +11,73 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 })
     }
 
-    // Collect all (buffer, name) pairs, expanding ZIPs inline
-    const tasks = []
+    // Collect all PDFs — from direct uploads and by expanding any ZIPs
+    const pdfs = []   // { name: string, buffer: Buffer }
+    const failed = [] // { file: string, error: string }
+
     for (const file of files) {
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
-      const name = file.name.toLowerCase()
+      const nameLower = file.name.toLowerCase()
 
-      if (name.endsWith('.pdf')) {
-        tasks.push({ buffer, name: file.name })
-      } else if (name.endsWith('.zip')) {
+      if (nameLower.endsWith('.pdf')) {
+        pdfs.push({ name: file.name, buffer })
+      } else if (nameLower.endsWith('.zip')) {
         try {
           const JSZip = (await import('jszip')).default
           const zip = await JSZip.loadAsync(buffer)
           for (const [zipFileName, zipEntry] of Object.entries(zip.files)) {
             if (zipEntry.dir || !zipFileName.toLowerCase().endsWith('.pdf')) continue
             const pdfBuffer = Buffer.from(await zipEntry.async('arraybuffer'))
-            tasks.push({ buffer: pdfBuffer, name: zipFileName })
+            pdfs.push({ name: zipFileName, buffer: pdfBuffer })
           }
         } catch (e) {
-          console.error('[extract-form16a] ZIP error:', e)
-          // Return a failed entry for the whole ZIP; individual entries weren't reachable
-          tasks.push({ buffer: null, name: file.name, zipError: String(e) })
+          console.error('[extract-form16a] ZIP expand error:', e)
+          failed.push({ file: file.name, error: String(e) })
         }
       }
     }
 
-    // Send all PDFs to the Render service in parallel
-    const results = await Promise.all(
-      tasks.map(async ({ buffer, name, zipError }) => {
-        if (zipError) return { type: 'failed', file: name, error: zipError }
-        try {
-          const row = await extractPdf(buffer, name)
-          return { type: 'ok', row }
-        } catch (e) {
-          console.error('[extract-form16a] PDF error:', e)
-          return { type: 'failed', file: name, error: String(e) }
-        }
-      })
-    )
+    if (!pdfs.length) {
+      return NextResponse.json({ processed: 0, rows: [], failed })
+    }
 
-    const rows = results.filter(r => r.type === 'ok').map(r => r.row)
-    const failed = results.filter(r => r.type === 'failed').map(r => ({ file: r.file, error: r.error }))
+    // Bundle all PDFs into one ZIP and send as a single request to /extract-batch
+    const JSZip = (await import('jszip')).default
+    const batchZip = new JSZip()
+    for (const { name, buffer } of pdfs) {
+      batchZip.file(name, buffer)
+    }
+    const zipBuffer = await batchZip.generateAsync({ type: 'nodebuffer' })
+
+    const batchForm = new FormData()
+    batchForm.append('file', new Blob([zipBuffer], { type: 'application/zip' }), 'batch.zip')
+
+    const response = await fetch(`${PDF_SERVICE_URL}/extract-batch`, {
+      method: 'POST',
+      body: batchForm,
+      signal: AbortSignal.timeout(120_000),
+    })
+
+    if (!response.ok) {
+      const text = await response.text()
+      return NextResponse.json({ error: `PDF service error ${response.status}: ${text}` }, { status: 500 })
+    }
+
+    const batchResults = await response.json()
+
+    const rows = []
+    for (const result of batchResults) {
+      if (result.error) {
+        failed.push({ file: result.filename, error: result.error })
+      } else {
+        rows.push({
+          document_name: result.filename,
+          pan: result.pan === 'NOT_FOUND' ? null : result.pan,
+          tds_amount: parseFloat(result.tds_amount) || 0,
+        })
+      }
+    }
 
     return NextResponse.json({ processed: rows.length, rows, failed })
   } catch (err) {
