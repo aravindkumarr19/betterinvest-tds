@@ -101,7 +101,10 @@ export default function TdsReconciliation() {
 function Form16ATab() {
   const [subTab, setSubTab] = useState<UploadSubTab>('pdf')
   const [dragging, setDragging] = useState(false)
-  const [progress, setProgress] = useState<number | null>(null)
+  const [processing, setProcessing] = useState(false)
+  const [processProgress, setProcessProgress] = useState<{ current: number; total: number } | null>(null)
+  const [showHalfwayMsg, setShowHalfwayMsg] = useState(false)
+  const [completionMsg, setCompletionMsg] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [clearing, setClearing] = useState(false)
   const [extracted, setExtracted] = useState<ExtractedResult[]>([])
@@ -121,32 +124,52 @@ function Form16ATab() {
   async function handleFiles(files: FileList | File[]) {
     const arr = Array.from(files)
     if (!arr.length) return
+
     setUploadError(null)
     setFailed([])
-    setProgress(10)
+    setExtracted([])
+    setCompletionMsg(null)
+    setShowHalfwayMsg(false)
 
-    const fd = new FormData()
-    arr.forEach(f => fd.append('files', f))
+    const total = arr.length
+    setProcessing(true)
+    setProcessProgress({ current: 0, total })
+    const startTime = Date.now()
+    let halfwayTriggered = false
 
-    try {
-      setProgress(40)
-      const res = await fetch('/api/tds/extract-form16a', { method: 'POST', body: fd })
-      setProgress(80)
-      if (!res.ok) {
-        const body = await res.json()
-        setUploadError(body.error || 'Extraction failed')
-        setProgress(null)
-        return
+    for (let i = 0; i < arr.length; i++) {
+      const file = arr[i]
+      const fd = new FormData()
+      fd.append('files', file)
+
+      try {
+        const res = await fetch('/api/tds/extract-form16a', { method: 'POST', body: fd })
+        if (res.ok) {
+          const data: { processed: number; rows: ExtractedResult[]; failed: FailedFile[] } = await res.json()
+          setExtracted(prev => [...prev, ...data.rows])
+          setFailed(prev => [...prev, ...data.failed])
+        } else {
+          const body = await res.json().catch(() => ({})) as { error?: string }
+          setFailed(prev => [...prev, { file: file.name, error: body.error || 'Extraction failed' }])
+        }
+      } catch (e) {
+        setFailed(prev => [...prev, { file: file.name, error: String(e) }])
       }
-      const data: { processed: number; rows: ExtractedResult[]; failed: FailedFile[] } = await res.json()
-      setExtracted(prev => [...prev, ...data.rows])
-      setFailed(prev => [...prev, ...data.failed])
-      setProgress(100)
-      setTimeout(() => setProgress(null), 800)
-    } catch (e) {
-      setUploadError(String(e))
-      setProgress(null)
+
+      const current = i + 1
+      setProcessProgress({ current, total })
+
+      if (!halfwayTriggered && total > 1 && current >= Math.ceil(total / 2)) {
+        halfwayTriggered = true
+        setShowHalfwayMsg(true)
+      }
     }
+
+    const elapsedSec = Math.round((Date.now() - startTime) / 1000)
+    setProcessing(false)
+    setProcessProgress(null)
+    setShowHalfwayMsg(false)
+    setCompletionMsg(`Completed ${total} file${total !== 1 ? 's' : ''} in ${elapsedSec} second${elapsedSec !== 1 ? 's' : ''}`)
   }
 
   function onDrop(e: React.DragEvent) {
@@ -235,14 +258,34 @@ function Form16ATab() {
         </div>
       </div>
 
-      {/* Progress bar */}
-      {progress !== null && (
-        <div className="w-full bg-[#e5e5e5] rounded-full h-1.5 overflow-hidden">
-          <div
-            className="bg-[#6c47ff] h-1.5 rounded-full transition-all duration-300"
-            style={{ width: `${progress}%` }}
-          />
+      {/* Live processing progress */}
+      {processing && processProgress && (
+        <div className="space-y-2">
+          <div className="flex items-center justify-between text-xs text-[#666666]">
+            <span>
+              {processProgress.current === 0
+                ? 'Starting...'
+                : `Processing ${processProgress.current}/${processProgress.total}...`}
+            </span>
+            <span>{Math.round((processProgress.current / processProgress.total) * 100)}%</span>
+          </div>
+          <div className="w-full bg-[#e5e5e5] rounded-full h-1.5 overflow-hidden">
+            <div
+              className="bg-[#6c47ff] h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${Math.max(2, Math.round((processProgress.current / processProgress.total) * 100))}%` }}
+            />
+          </div>
         </div>
+      )}
+
+      {showHalfwayMsg && (
+        <p className="text-sm text-center text-[#6c47ff] animate-pulse py-1">
+          Numbers are being crunched — hang tight! 💧
+        </p>
+      )}
+
+      {!processing && completionMsg && (
+        <p className="text-sm text-center text-green-600 font-medium py-1">{completionMsg}</p>
       )}
 
       {uploadError && (
@@ -364,7 +407,7 @@ function Form16ATab() {
         </div>
       )}
 
-      {saved.length === 0 && extracted.length === 0 && progress === null && (
+      {saved.length === 0 && extracted.length === 0 && !processing && (
         <p className="text-sm text-[#666666] text-center py-4">No Form 16A records yet. Upload files above.</p>
       )}
     </div>
