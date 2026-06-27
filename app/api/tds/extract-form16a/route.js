@@ -9,6 +9,7 @@ async function extractPdf(pdfBuffer, fileName) {
   const response = await fetch(`${PDF_SERVICE_URL}/extract`, {
     method: 'POST',
     body: formData,
+    signal: AbortSignal.timeout(60_000),
   })
 
   if (!response.ok) {
@@ -33,41 +34,48 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No files provided' }, { status: 400 })
     }
 
-    const rows = []
-    const failed = []
-
+    // Collect all (buffer, name) pairs, expanding ZIPs inline
+    const tasks = []
     for (const file of files) {
       const arrayBuffer = await file.arrayBuffer()
       const buffer = Buffer.from(arrayBuffer)
       const name = file.name.toLowerCase()
 
       if (name.endsWith('.pdf')) {
-        try {
-          rows.push(await extractPdf(buffer, file.name))
-        } catch (e) {
-          console.error('[extract-form16a] PDF error:', e)
-          failed.push({ file: file.name, error: String(e) })
-        }
+        tasks.push({ buffer, name: file.name })
       } else if (name.endsWith('.zip')) {
         try {
           const JSZip = (await import('jszip')).default
           const zip = await JSZip.loadAsync(buffer)
           for (const [zipFileName, zipEntry] of Object.entries(zip.files)) {
             if (zipEntry.dir || !zipFileName.toLowerCase().endsWith('.pdf')) continue
-            try {
-              const pdfBuffer = Buffer.from(await zipEntry.async('arraybuffer'))
-              rows.push(await extractPdf(pdfBuffer, zipFileName))
-            } catch (e) {
-              console.error('[extract-form16a] ZIP entry error:', e)
-              failed.push({ file: zipFileName, error: String(e) })
-            }
+            const pdfBuffer = Buffer.from(await zipEntry.async('arraybuffer'))
+            tasks.push({ buffer: pdfBuffer, name: zipFileName })
           }
         } catch (e) {
           console.error('[extract-form16a] ZIP error:', e)
-          failed.push({ file: file.name, error: String(e) })
+          // Return a failed entry for the whole ZIP; individual entries weren't reachable
+          tasks.push({ buffer: null, name: file.name, zipError: String(e) })
         }
       }
     }
+
+    // Send all PDFs to the Render service in parallel
+    const results = await Promise.all(
+      tasks.map(async ({ buffer, name, zipError }) => {
+        if (zipError) return { type: 'failed', file: name, error: zipError }
+        try {
+          const row = await extractPdf(buffer, name)
+          return { type: 'ok', row }
+        } catch (e) {
+          console.error('[extract-form16a] PDF error:', e)
+          return { type: 'failed', file: name, error: String(e) }
+        }
+      })
+    )
+
+    const rows = results.filter(r => r.type === 'ok').map(r => r.row)
+    const failed = results.filter(r => r.type === 'failed').map(r => ({ file: r.file, error: r.error }))
 
     return NextResponse.json({ processed: rows.length, rows, failed })
   } catch (err) {
