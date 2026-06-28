@@ -79,7 +79,7 @@ export default function TdsReconciliation() {
               onClick={() => setTab(t.key)}
               className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 tab === t.key
-                  ? 'border-[#6c47ff] text-[#6c47ff]'
+                  ? 'border-[#2563eb] text-[#2563eb]'
                   : 'border-transparent text-[#666666] hover:text-[#111111]'
               }`}
             >
@@ -235,7 +235,7 @@ function Form16ATab() {
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
-          dragging ? 'border-[#6c47ff] bg-[#ede9ff]/30' : 'border-[#e5e5e5] hover:border-[#6c47ff] bg-white'
+          dragging ? 'border-[#2563eb] bg-[#dbeafe]/30' : 'border-[#e5e5e5] hover:border-[#2563eb] bg-white'
         }`}
       >
         <input ref={pdfInputRef} type="file" accept=".pdf" multiple className="hidden"
@@ -244,7 +244,7 @@ function Form16ATab() {
           onChange={e => e.target.files && handleFiles(e.target.files)} />
 
         <div className="flex flex-col items-center gap-3">
-          <svg className="w-10 h-10 text-[#6c47ff]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="w-10 h-10 text-[#2563eb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
           <div>
@@ -271,7 +271,7 @@ function Form16ATab() {
           </div>
           <div className="w-full bg-[#e5e5e5] rounded-full h-1.5 overflow-hidden">
             <div
-              className="bg-[#6c47ff] h-1.5 rounded-full transition-all duration-300"
+              className="bg-[#2563eb] h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${Math.max(2, Math.round((processProgress.current / processProgress.total) * 100))}%` }}
             />
           </div>
@@ -279,7 +279,7 @@ function Form16ATab() {
       )}
 
       {showHalfwayMsg && (
-        <p className="text-sm text-center text-[#6c47ff] animate-pulse py-1">
+        <p className="text-sm text-center text-[#2563eb] animate-pulse py-1">
           Numbers are being crunched — hang tight! 💧
         </p>
       )}
@@ -321,7 +321,7 @@ function Form16ATab() {
               <button
                 onClick={saveAll}
                 disabled={saving}
-                className="px-3 py-1.5 text-xs font-medium bg-[#6c47ff] text-white rounded-lg hover:bg-[#5a38e0] transition-colors disabled:opacity-50"
+                className="px-3 py-1.5 text-xs font-medium bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-colors disabled:opacity-50"
               >
                 {saving ? 'Saving...' : 'Save to Database'}
               </button>
@@ -517,7 +517,7 @@ function TrackerTab() {
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <button onClick={addRow}
-          className="px-3 py-1.5 text-xs font-medium bg-[#6c47ff] text-white rounded-lg hover:bg-[#5a38e0] transition-colors">
+          className="px-3 py-1.5 text-xs font-medium bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-colors">
           + Add Row
         </button>
         <button onClick={() => setShowPaste(v => !v)}
@@ -536,11 +536,11 @@ function TrackerTab() {
         <div className="bg-white border border-[#e5e5e5] rounded-xl p-4 space-y-3">
           <p className="text-xs text-[#666666]">Paste tab-separated or comma-separated rows (PAN, TDS Amount):</p>
           <textarea ref={pasteRef} rows={6}
-            className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm font-mono text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff]"
+            className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm font-mono text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
             placeholder={'ABCDE1234F\t12345.00\nXYZAB5678G\t9876.50'} />
           <div className="flex gap-2">
             <button onClick={handlePaste}
-              className="px-3 py-1.5 text-xs font-medium bg-[#6c47ff] text-white rounded-lg hover:bg-[#5a38e0] transition-colors">
+              className="px-3 py-1.5 text-xs font-medium bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-colors">
               Import
             </button>
             <button onClick={() => setShowPaste(false)}
@@ -572,14 +572,14 @@ function TrackerTab() {
                       <input type="text" value={row.pan}
                         onChange={e => updateCell(row.id, 'pan', e.target.value.toUpperCase())}
                         onBlur={() => row._dirty && !row._new && saveRow(row)}
-                        className="w-full font-mono text-sm text-[#111111] bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#6c47ff] rounded px-1"
+                        className="w-full font-mono text-sm text-[#111111] bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#2563eb] rounded px-1"
                         placeholder="PAN" />
                     </td>
                     <td className="px-5 py-2.5">
                       <input type="number" value={row.tds_amount ?? ''}
                         onChange={e => updateCell(row.id, 'tds_amount', e.target.value)}
                         onBlur={() => row._dirty && !row._new && saveRow(row)}
-                        className="w-full text-sm text-right text-[#111111] bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#6c47ff] rounded px-1"
+                        className="w-full text-sm text-right text-[#111111] bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#2563eb] rounded px-1"
                         placeholder="0.00" />
                     </td>
                     <td className="px-5 py-2.5 text-xs text-[#666666]">
@@ -589,7 +589,7 @@ function TrackerTab() {
                       <div className="flex items-center justify-center gap-2">
                         {row._dirty && (
                           <button onClick={() => saveRow(row)} disabled={saving === row.id}
-                            className="text-xs px-2 py-1 bg-[#6c47ff] text-white rounded hover:bg-[#5a38e0] transition-colors disabled:opacity-50">
+                            className="text-xs px-2 py-1 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors disabled:opacity-50">
                             {saving === row.id ? '...' : 'Save'}
                           </button>
                         )}

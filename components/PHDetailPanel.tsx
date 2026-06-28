@@ -249,7 +249,7 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
               ) : (
                 messages.map(msg => (
                   <div key={msg.id} className="flex gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-[#6c47ff] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0 mt-0.5">
                       {msg.sender_name[0]}
                     </div>
                     <div className="flex-1">
@@ -261,7 +261,7 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                       </div>
                       <p className="text-xs text-[#333333] mt-0.5 leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{
-                          __html: msg.content.replace(/@(\w+)/g, '<span class="text-[#6c47ff] font-medium">@$1</span>')
+                          __html: msg.content.replace(/@(\w+)/g, '<span class="text-[#2563eb] font-medium">@$1</span>')
                         }}
                       />
                     </div>
@@ -282,7 +282,7 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                   <div
                     key={m}
                     onClick={() => insertMention(m)}
-                    className={`px-3 py-2 text-xs cursor-pointer transition-colors ${i === mentionIndex ? 'bg-[#ede9ff] text-[#6c47ff]' : 'text-[#111111] hover:bg-[#fafafa]'}`}
+                    className={`px-3 py-2 text-xs cursor-pointer transition-colors ${i === mentionIndex ? 'bg-[#dbeafe] text-[#2563eb]' : 'text-[#111111] hover:bg-[#fafafa]'}`}
                   >
                     @{m}
                   </div>
@@ -297,12 +297,12 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                 onKeyDown={handleKeyDown}
                 placeholder="Message... (@ to mention, Enter to send)"
                 rows={2}
-                className="flex-1 resize-none border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#6c47ff]"
+                className="flex-1 resize-none border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
               />
               <button
                 onClick={sendMessage}
                 disabled={sending || !newMessage.trim()}
-                className="px-3 py-2 bg-[#6c47ff] text-white rounded-lg hover:bg-[#5a38e0] transition-colors disabled:opacity-50 self-end flex-shrink-0"
+                className="px-3 py-2 bg-[#2563eb] text-white rounded-lg hover:bg-[#1d4ed8] transition-colors disabled:opacity-50 self-end flex-shrink-0"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -330,7 +330,7 @@ function QuarterComment({ value, onSave }: { value: string; onSave: (v: string) 
         onChange={e => setText(e.target.value)}
         onBlur={() => { setEditing(false); onSave(text) }}
         rows={2}
-        className="w-full mt-2 text-xs border border-[#6c47ff] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111]"
+        className="w-full mt-2 text-xs border border-[#2563eb] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111]"
         placeholder="Add comment..."
       />
     )

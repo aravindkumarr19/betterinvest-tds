@@ -90,12 +90,12 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
       {/* Logo */}
       <div className="p-4 border-b border-[#e5e5e5]">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#6c47ff] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+          <div className="w-8 h-8 rounded-lg bg-[#2563eb] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
             BI
           </div>
           <div>
             <div className="text-[#111111] font-semibold text-sm leading-tight">BetterInvest</div>
-            <div className="text-[#6c47ff] text-xs font-medium">TDS</div>
+            <div className="text-[#2563eb] text-xs font-medium">TDS</div>
           </div>
         </div>
       </div>
@@ -110,7 +110,7 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
               href={item.href}
               className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
                 active
-                  ? 'bg-[#ede9ff] text-[#6c47ff] font-medium'
+                  ? 'bg-[#dbeafe] text-[#2563eb] font-medium'
                   : 'text-[#666666] hover:bg-[#fafafa] hover:text-[#111111]'
               }`}
             >
@@ -160,7 +160,7 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
                     <div
                       key={n.id}
                       onClick={() => markRead(n.id)}
-                      className={`px-3 py-2.5 border-b border-[#e5e5e5] cursor-pointer hover:bg-[#fafafa] transition-colors ${!n.is_read ? 'bg-[#ede9ff]/30' : ''}`}
+                      className={`px-3 py-2.5 border-b border-[#e5e5e5] cursor-pointer hover:bg-[#fafafa] transition-colors ${!n.is_read ? 'bg-[#dbeafe]/30' : ''}`}
                     >
                       <p className="text-xs text-[#111111] leading-snug">{n.message}</p>
                       <p className="text-[10px] text-[#666666] mt-0.5">
@@ -176,7 +176,7 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
 
         {/* User */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg">
-          <div className="w-6 h-6 rounded-full bg-[#6c47ff] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+          <div className="w-6 h-6 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
             {displayName[0]}
           </div>
           <span className="text-xs text-[#111111] font-medium flex-1 truncate">{displayName}</span>

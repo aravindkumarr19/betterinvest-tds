@@ -31,7 +31,7 @@ export default function LoginPage() {
       <div className="bg-white border border-[#e5e5e5] rounded-2xl p-8 w-full max-w-sm shadow-sm">
         {/* Logo */}
         <div className="flex items-center gap-2 mb-8">
-          <div className="w-9 h-9 rounded-lg bg-[#6c47ff] flex items-center justify-center text-white font-bold text-sm">
+          <div className="w-9 h-9 rounded-lg bg-[#2563eb] flex items-center justify-center text-white font-bold text-sm">
             BI
           </div>
           <div>
@@ -52,7 +52,7 @@ export default function LoginPage() {
               onChange={e => setEmail(e.target.value)}
               required
               placeholder="you@betterinvest.club"
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#6c47ff] focus:border-transparent"
+              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
             />
           </div>
           <div>
@@ -63,7 +63,7 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               required
               placeholder="••••••••"
-              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#6c47ff] focus:border-transparent"
+              className="w-full px-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] focus:outline-none focus:ring-2 focus:ring-[#2563eb] focus:border-transparent"
             />
           </div>
 
@@ -74,7 +74,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-[#6c47ff] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#5a38e0] transition-colors disabled:opacity-60"
+            className="w-full bg-[#2563eb] text-white py-2 rounded-lg text-sm font-medium hover:bg-[#1d4ed8] transition-colors disabled:opacity-60"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>

@@ -236,7 +236,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-xl font-semibold text-[#111111]">TDS Status</h1>
-        <span className="text-xs px-2.5 py-1 bg-[#ede9ff] text-[#6c47ff] rounded-full font-medium">FY 2025-26</span>
+        <span className="text-xs px-2.5 py-1 bg-[#dbeafe] text-[#2563eb] rounded-full font-medium">FY 2025-26</span>
       </div>
 
       {/* Stat cards */}
@@ -262,7 +262,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
           onClick={() => setSelectedTab('Summary')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedTab === 'Summary'
-              ? 'bg-[#6c47ff] text-white'
+              ? 'bg-[#2563eb] text-white'
               : 'text-[#666666] hover:text-[#111111] hover:bg-[#fafafa]'
           }`}
         >
@@ -274,7 +274,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             onClick={() => setSelectedTab(q.key)}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedTab === q.key
-                ? 'bg-[#6c47ff] text-white'
+                ? 'bg-[#2563eb] text-white'
                 : 'text-[#666666] hover:text-[#111111] hover:bg-[#fafafa]'
             }`}
           >
@@ -294,17 +294,17 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search production house..."
-            className="w-full pl-9 pr-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white"
+            className="w-full pl-9 pr-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white"
           />
         </div>
-        <select value={pocFilter} onChange={e => setPocFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
+        <select value={pocFilter} onChange={e => setPocFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white">
           {POCS.map(p => <option key={p} value={p}>{p === 'All' ? 'All POCs' : p}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white">
           {STATUSES_FILTER.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
         </select>
         {selectedTab !== 'Summary' && (
-          <select value={checkpointFilter} onChange={e => setCheckpointFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] bg-white">
+          <select value={checkpointFilter} onChange={e => setCheckpointFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white">
             {CHECKPOINTS.map(c => <option key={c} value={c}>{c === 'All' ? 'All Checkpoints' : c}</option>)}
           </select>
         )}
@@ -506,7 +506,7 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
       {/* Actions */}
       <td className="px-4 py-4">
         <div className="flex items-center justify-center gap-2">
-          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#6c47ff] transition-colors">
+          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#2563eb] transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -634,7 +634,7 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
             onChange={e => setComment(e.target.value)}
             onBlur={handleBlur}
             rows={2}
-            className="w-full border border-[#6c47ff] rounded-lg px-3 py-2 text-sm resize-none focus:outline-none text-[#111111]"
+            className="w-full border border-[#2563eb] rounded-lg px-3 py-2 text-sm resize-none focus:outline-none text-[#111111]"
             placeholder="Add comment..."
           />
         ) : (
@@ -648,7 +648,7 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
       </td>
       <td className="px-4 py-4">
         <div className="flex items-center justify-center gap-2">
-          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#6c47ff] transition-colors">
+          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#2563eb] transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>

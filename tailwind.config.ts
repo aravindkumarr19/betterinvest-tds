@@ -12,8 +12,8 @@ const config: Config = {
         sans: ['var(--font-inter)', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'sans-serif'],
       },
       colors: {
-        primary: '#6c47ff',
-        'primary-light': '#ede9ff',
+        primary: '#2563eb',
+        'primary-light': '#dbeafe',
         surface: '#fafafa',
         border: '#e5e5e5',
       },

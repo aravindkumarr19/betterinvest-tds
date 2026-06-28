@@ -51,7 +51,7 @@ export default function CriticalPHs({ currentUser }: { currentUser: string }) {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-[#6c47ff] text-white rounded-lg text-sm font-medium hover:bg-[#5a38e0] transition-colors"
+          className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded-lg text-sm font-medium hover:bg-[#1d4ed8] transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -132,7 +132,7 @@ function CriticalRow({ critical, onUpdate, onRemove }: {
           type="date"
           defaultValue={critical.target_closure || ''}
           onBlur={e => onUpdate(critical.id, 'target_closure', e.target.value)}
-          className="text-xs border border-[#e5e5e5] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#6c47ff] w-full"
+          className="text-xs border border-[#e5e5e5] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563eb] w-full"
         />
       </td>
       <td className="px-4 py-3">
@@ -181,7 +181,7 @@ function EditableText({ value, placeholder = 'Click to edit...', onSave }: {
         onChange={e => setText(e.target.value)}
         onBlur={() => { setEditing(false); onSave(text) }}
         rows={2}
-        className="w-full text-xs border border-[#6c47ff] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111]"
+        className="w-full text-xs border border-[#2563eb] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111]"
         placeholder={placeholder}
       />
     )
@@ -243,7 +243,7 @@ function AddCriticalModal({ allPhs, onClose, onSaved }: {
             <select
               value={form.ph_id}
               onChange={e => setForm(f => ({ ...f, ph_id: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff]"
+              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
             >
               <option value="">Select PH...</option>
               {allPhs.map(ph => <option key={ph.id} value={ph.id}>{ph.ph_name}</option>)}
@@ -252,28 +252,28 @@ function AddCriticalModal({ allPhs, onClose, onSaved }: {
           <div>
             <label className="block text-xs font-medium text-[#666666] mb-1.5">Why Critical</label>
             <textarea rows={2} value={form.why_critical} onChange={e => setForm(f => ({ ...f, why_critical: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] resize-none" />
+              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#666666] mb-1.5">Quarters Pending</label>
             <input type="text" placeholder="e.g. Q1, Q2, Q3" value={form.quarters_pending} onChange={e => setForm(f => ({ ...f, quarters_pending: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff]" />
+              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#666666] mb-1.5">Last Action Taken</label>
             <textarea rows={2} value={form.last_action} onChange={e => setForm(f => ({ ...f, last_action: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] resize-none" />
+              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
           </div>
           <div>
             <label className="block text-xs font-medium text-[#666666] mb-1.5">Next Action</label>
             <textarea rows={2} value={form.next_action} onChange={e => setForm(f => ({ ...f, next_action: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff] resize-none" />
+              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-[#666666] mb-1.5">Target Closure</label>
               <input type="date" value={form.target_closure} onChange={e => setForm(f => ({ ...f, target_closure: e.target.value }))}
-                className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#6c47ff]" />
+                className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]" />
             </div>
             <div>
               <label className="block text-xs font-medium text-[#666666] mb-1.5">Escalation</label>
@@ -292,7 +292,7 @@ function AddCriticalModal({ allPhs, onClose, onSaved }: {
           <button
             onClick={handleSave}
             disabled={!form.ph_id || saving}
-            className="px-4 py-2 bg-[#6c47ff] text-white rounded-lg text-sm font-medium hover:bg-[#5a38e0] transition-colors disabled:opacity-60"
+            className="px-4 py-2 bg-[#2563eb] text-white rounded-lg text-sm font-medium hover:bg-[#1d4ed8] transition-colors disabled:opacity-60"
           >
             {saving ? 'Saving...' : 'Save'}
           </button>

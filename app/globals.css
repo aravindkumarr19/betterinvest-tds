@@ -32,7 +32,7 @@ body {
 
 /* Checkbox custom style */
 input[type='checkbox'] {
-  accent-color: #6c47ff;
+  accent-color: #2563eb;
   width: 16px;
   height: 16px;
   cursor: pointer;
