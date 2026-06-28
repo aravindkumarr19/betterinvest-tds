@@ -10,7 +10,6 @@ export const STATUS_OPTIONS = [
   'Refunded to Investors',
 ] as const
 
-// Canonical order determines join order stored in DB
 function formatStatus(selected: string[]): string {
   return STATUS_OPTIONS.filter(o => selected.includes(o)).join(', ')
 }
@@ -21,13 +20,13 @@ export function parseStatus(status: string): string[] {
 }
 
 export function getBadgeStyle(status: string): string {
-  if (!status) return 'bg-gray-100 text-gray-600'
-  if (status === 'Filed') return 'bg-green-100 text-green-700'
-  if (status === 'Refunded to Investors') return 'bg-blue-100 text-blue-700'
-  if (status === 'No TDS Till now') return 'bg-gray-100 text-gray-600'
-  if (status.includes('Not filed')) return 'bg-red-100 text-red-700'
-  if (status.includes('In Process') || status.includes('Filed')) return 'bg-amber-100 text-amber-700'
-  return 'bg-gray-100 text-gray-600'
+  if (!status) return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+  if (status === 'Filed') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+  if (status === 'Refunded to Investors') return 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+  if (status === 'No TDS Till now') return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+  if (status.includes('Not filed')) return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+  if (status.includes('In Process') || status.includes('Filed')) return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+  return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
 }
 
 interface Props {
@@ -59,7 +58,7 @@ export default function StatusDropdown({ phId, status, onStatusChange, size = 's
       ? selected.filter(s => s !== option)
       : [...selected, option]
 
-    if (next.length === 0) return // keep at least one selected
+    if (next.length === 0) return
 
     const newStatus = formatStatus(next)
     setSelected(next)
@@ -89,21 +88,21 @@ export default function StatusDropdown({ phId, status, onStatusChange, size = 's
 
       {open && (
         <div
-          className="absolute z-50 top-full left-0 mt-1 bg-white border border-[#e5e5e5] rounded-xl shadow-xl py-1.5 min-w-[200px]"
+          className="absolute z-50 top-full left-0 mt-1 bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl shadow-xl py-1.5 min-w-[200px]"
           onClick={e => e.stopPropagation()}
         >
-          <div className="px-3 pb-1.5 pt-0.5 text-[10px] font-semibold text-[#999] uppercase tracking-wider border-b border-[#f0f0f0] mb-1">
+          <div className="px-3 pb-1.5 pt-0.5 text-[10px] font-semibold text-[#999] dark:text-[#555555] uppercase tracking-wider border-b border-[#f0f0f0] dark:border-[#222222] mb-1">
             Overall Status
           </div>
           {STATUS_OPTIONS.map(opt => (
-            <label key={opt} className="flex items-center gap-2.5 px-3 py-2 hover:bg-[#fafafa] cursor-pointer">
+            <label key={opt} className="flex items-center gap-2.5 px-3 py-2 hover:bg-[#fafafa] dark:hover:bg-[#161616] cursor-pointer">
               <input
                 type="checkbox"
                 checked={selected.includes(opt)}
                 onChange={() => toggleOption(opt)}
-                className="w-3.5 h-3.5 cursor-pointer accent-[#111111] flex-shrink-0"
+                className="w-3.5 h-3.5 cursor-pointer accent-[#2563eb] flex-shrink-0"
               />
-              <span className="text-sm text-[#111111]">{opt}</span>
+              <span className="text-sm text-[#111111] dark:text-white">{opt}</span>
             </label>
           ))}
         </div>

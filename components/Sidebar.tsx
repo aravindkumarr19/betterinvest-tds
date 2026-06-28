@@ -53,8 +53,13 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
   const [unread, setUnread] = useState(0)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notifications, setNotifications] = useState<TdsNotification[]>([])
+  const [dark, setDark] = useState(false)
 
   const displayName = getDisplayName(currentUser)
+
+  useEffect(() => {
+    setDark(document.documentElement.classList.contains('dark'))
+  }, [])
 
   useEffect(() => {
     fetchNotifications()
@@ -85,17 +90,23 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
     router.refresh()
   }
 
+  function toggleTheme() {
+    const isDark = document.documentElement.classList.toggle('dark')
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+    setDark(isDark)
+  }
+
   return (
-    <aside className="w-56 bg-white border-r border-[#e5e5e5] flex flex-col h-screen fixed left-0 top-0 z-30">
+    <aside className="w-56 bg-white dark:bg-[#0a0a0a] border-r border-[#e5e5e5] dark:border-[#222222] flex flex-col h-screen fixed left-0 top-0 z-30">
       {/* Logo */}
-      <div className="p-4 border-b border-[#e5e5e5]">
+      <div className="p-4 border-b border-[#e5e5e5] dark:border-[#222222]">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-[#2563eb] flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
             BI
           </div>
           <div>
-            <div className="text-[#111111] font-semibold text-sm leading-tight">BetterInvest</div>
-            <div className="text-[#2563eb] text-xs font-medium">TDS</div>
+            <div className="text-[#111111] dark:text-white font-semibold text-sm leading-tight">BetterInvest</div>
+            <div className="text-[#2563eb] dark:text-[#60a5fa] text-xs font-medium">TDS</div>
           </div>
         </div>
       </div>
@@ -110,8 +121,8 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
               href={item.href}
               className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors ${
                 active
-                  ? 'bg-[#dbeafe] text-[#2563eb] font-medium'
-                  : 'text-[#666666] hover:bg-[#fafafa] hover:text-[#111111]'
+                  ? 'bg-[#dbeafe] text-[#2563eb] dark:bg-[#1e3a5f] dark:text-[#60a5fa] font-medium'
+                  : 'text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-[#111111] hover:text-[#111111] dark:hover:text-white'
               }`}
             >
               {item.icon}
@@ -121,13 +132,13 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
         })}
       </nav>
 
-      {/* Notification bell + user */}
-      <div className="p-3 border-t border-[#e5e5e5] space-y-2">
+      {/* Bottom section */}
+      <div className="p-3 border-t border-[#e5e5e5] dark:border-[#222222] space-y-2">
         {/* Notification */}
         <div className="relative">
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[#666666] hover:bg-[#fafafa] hover:text-[#111111] transition-colors text-sm"
+            className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-[#666666] dark:text-[#888888] hover:bg-[#fafafa] dark:hover:bg-[#111111] hover:text-[#111111] dark:hover:text-white transition-colors text-sm"
           >
             <div className="relative">
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -143,10 +154,10 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
           </button>
 
           {showNotifications && (
-            <div className="absolute bottom-full left-0 w-72 bg-white border border-[#e5e5e5] rounded-xl shadow-lg mb-1 overflow-hidden z-50">
-              <div className="px-3 py-2 border-b border-[#e5e5e5] flex items-center justify-between">
-                <span className="text-xs font-semibold text-[#111111]">Notifications</span>
-                <button onClick={() => setShowNotifications(false)} className="text-[#666666] hover:text-[#111111]">
+            <div className="absolute bottom-full left-0 w-72 bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl shadow-lg mb-1 overflow-hidden z-50">
+              <div className="px-3 py-2 border-b border-[#e5e5e5] dark:border-[#222222] flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#111111] dark:text-white">Notifications</span>
+                <button onClick={() => setShowNotifications(false)} className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white">
                   <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
@@ -154,16 +165,16 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
               </div>
               <div className="max-h-64 overflow-y-auto">
                 {notifications.length === 0 ? (
-                  <p className="text-xs text-[#666666] px-3 py-4 text-center">No notifications</p>
+                  <p className="text-xs text-[#666666] dark:text-[#888888] px-3 py-4 text-center">No notifications</p>
                 ) : (
                   notifications.map(n => (
                     <div
                       key={n.id}
                       onClick={() => markRead(n.id)}
-                      className={`px-3 py-2.5 border-b border-[#e5e5e5] cursor-pointer hover:bg-[#fafafa] transition-colors ${!n.is_read ? 'bg-[#dbeafe]/30' : ''}`}
+                      className={`px-3 py-2.5 border-b border-[#e5e5e5] dark:border-[#222222] cursor-pointer hover:bg-[#fafafa] dark:hover:bg-[#161616] transition-colors ${!n.is_read ? 'bg-[#dbeafe]/30 dark:bg-[#1e3a5f]/20' : ''}`}
                     >
-                      <p className="text-xs text-[#111111] leading-snug">{n.message}</p>
-                      <p className="text-[10px] text-[#666666] mt-0.5">
+                      <p className="text-xs text-[#111111] dark:text-white leading-snug">{n.message}</p>
+                      <p className="text-[10px] text-[#666666] dark:text-[#888888] mt-0.5">
                         {new Date(n.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
                       </p>
                     </div>
@@ -174,16 +185,31 @@ export default function Sidebar({ currentUser }: { currentUser: string }) {
           )}
         </div>
 
-        {/* User */}
+        {/* Theme toggle + User */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg">
           <div className="w-6 h-6 rounded-full bg-[#2563eb] flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
             {displayName[0]}
           </div>
-          <span className="text-xs text-[#111111] font-medium flex-1 truncate">{displayName}</span>
+          <span className="text-xs text-[#111111] dark:text-white font-medium flex-1 truncate">{displayName}</span>
+          <button
+            onClick={toggleTheme}
+            title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+            className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white transition-colors"
+          >
+            {dark ? (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M18.364 18.364l-.707-.707M6.343 6.343l-.707-.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            ) : (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+              </svg>
+            )}
+          </button>
           <button
             onClick={handleLogout}
             title="Logout"
-            className="text-[#666666] hover:text-red-500 transition-colors"
+            className="text-[#666666] dark:text-[#888888] hover:text-red-500 transition-colors"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

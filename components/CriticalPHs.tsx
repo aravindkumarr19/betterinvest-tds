@@ -44,8 +44,8 @@ export default function CriticalPHs({ currentUser }: { currentUser: string }) {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold text-[#111111]">Critical PHs</h1>
-          <span className="text-xs px-2.5 py-1 bg-red-100 text-red-700 rounded-full font-medium">
+          <h1 className="text-xl font-semibold text-[#111111] dark:text-white">Critical PHs</h1>
+          <span className="text-xs px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-full font-medium">
             {criticals.length}
           </span>
         </div>
@@ -61,27 +61,27 @@ export default function CriticalPHs({ currentUser }: { currentUser: string }) {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[1100px]">
             <thead>
-              <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-48">PH Name</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-40">Why Critical</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-28">Qtrs Pending</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-44">Last Action</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-40">Next Action</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-28">Target Date</th>
-                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] w-28">Status</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-[#666666] w-24">Escalation</th>
-                <th className="text-center px-4 py-3 text-xs font-semibold text-[#666666] w-20">Actions</th>
+              <tr className="border-b border-[#e5e5e5] dark:border-[#222222] bg-[#fafafa] dark:bg-[#161616]">
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-48">PH Name</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-40">Why Critical</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-28">Qtrs Pending</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-44">Last Action</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-40">Next Action</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-28">Target Date</th>
+                <th className="text-left px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-28">Status</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-24">Escalation</th>
+                <th className="text-center px-4 py-3 text-xs font-semibold text-[#666666] dark:text-[#888888] w-20">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#e5e5e5]">
+            <tbody className="divide-y divide-[#e5e5e5] dark:divide-[#222222]">
               {loading ? (
-                <tr><td colSpan={9} className="text-center py-12 text-sm text-[#666666]">Loading...</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-sm text-[#666666] dark:text-[#888888]">Loading...</td></tr>
               ) : criticals.length === 0 ? (
-                <tr><td colSpan={9} className="text-center py-12 text-sm text-[#666666]">No critical PHs</td></tr>
+                <tr><td colSpan={9} className="text-center py-12 text-sm text-[#666666] dark:text-[#888888]">No critical PHs</td></tr>
               ) : (
                 criticals.map(c => (
                   <CriticalRow key={c.id} critical={c} onUpdate={updateField} onRemove={removeCritical} />
@@ -110,10 +110,10 @@ function CriticalRow({ critical, onUpdate, onRemove }: {
   onRemove: (id: string) => void
 }) {
   return (
-    <tr className="hover:bg-[#fafafa] transition-colors align-top">
-      <td className="px-4 py-3 font-medium text-[#111111] text-sm">
+    <tr className="hover:bg-[#fafafa] dark:hover:bg-[#161616] transition-colors align-top">
+      <td className="px-4 py-3 font-medium text-[#111111] dark:text-white text-sm">
         {critical.tds_ph?.ph_name || '—'}
-        <div className="text-xs text-[#666666] mt-0.5">{critical.tds_ph?.poc}</div>
+        <div className="text-xs text-[#666666] dark:text-[#888888] mt-0.5">{critical.tds_ph?.poc}</div>
       </td>
       <td className="px-4 py-3">
         <EditableText value={critical.why_critical || ''} onSave={v => onUpdate(critical.id, 'why_critical', v)} />
@@ -132,7 +132,7 @@ function CriticalRow({ critical, onUpdate, onRemove }: {
           type="date"
           defaultValue={critical.target_closure || ''}
           onBlur={e => onUpdate(critical.id, 'target_closure', e.target.value)}
-          className="text-xs border border-[#e5e5e5] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563eb] w-full"
+          className="text-xs border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-[#2563eb] w-full bg-white dark:bg-[#0a0a0a] text-[#111111] dark:text-white"
         />
       </td>
       <td className="px-4 py-3">
@@ -142,7 +142,9 @@ function CriticalRow({ critical, onUpdate, onRemove }: {
         <button
           onClick={() => onUpdate(critical.id, 'escalation', !critical.escalation)}
           className={`text-[11px] px-3 py-1 rounded-full font-medium transition-colors ${
-            critical.escalation ? 'bg-red-100 text-red-700 hover:bg-red-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            critical.escalation
+              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+              : 'bg-gray-100 dark:bg-[#222222] text-gray-600 dark:text-[#888888] hover:bg-gray-200 dark:hover:bg-[#2a2a2a]'
           }`}
         >
           {critical.escalation ? 'Yes' : 'No'}
@@ -152,7 +154,7 @@ function CriticalRow({ critical, onUpdate, onRemove }: {
         <button
           onClick={() => onRemove(critical.id)}
           title="Remove from critical"
-          className="text-[#999] hover:text-red-500 transition-colors"
+          className="text-[#999] dark:text-[#555555] hover:text-red-500 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -181,7 +183,7 @@ function EditableText({ value, placeholder = 'Click to edit...', onSave }: {
         onChange={e => setText(e.target.value)}
         onBlur={() => { setEditing(false); onSave(text) }}
         rows={2}
-        className="w-full text-xs border border-[#2563eb] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111]"
+        className="w-full text-xs border border-[#2563eb] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a]"
         placeholder={placeholder}
       />
     )
@@ -190,7 +192,7 @@ function EditableText({ value, placeholder = 'Click to edit...', onSave }: {
   return (
     <div
       onClick={() => setEditing(true)}
-      className="text-xs text-[#666666] cursor-text hover:text-[#111111] min-h-[20px] leading-relaxed"
+      className="text-xs text-[#666666] dark:text-[#888888] cursor-text hover:text-[#111111] dark:hover:text-white min-h-[20px] leading-relaxed"
     >
       {text || <span className="italic opacity-40">{placeholder}</span>}
     </div>
@@ -226,11 +228,11 @@ function AddCriticalModal({ allPhs, onClose, onSaved }: {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/30 dark:bg-black/60 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-[#111111] rounded-2xl shadow-2xl w-full max-w-lg p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-base font-semibold text-[#111111]">Add Critical PH</h2>
-          <button onClick={onClose} className="text-[#666666] hover:text-[#111111]">
+          <h2 className="text-base font-semibold text-[#111111] dark:text-white">Add Critical PH</h2>
+          <button onClick={onClose} className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -239,47 +241,51 @@ function AddCriticalModal({ allPhs, onClose, onSaved }: {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-[#666666] mb-1.5">Production House *</label>
+            <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Production House *</label>
             <select
               value={form.ph_id}
               onChange={e => setForm(f => ({ ...f, ph_id: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
+              className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
             >
               <option value="">Select PH...</option>
               {allPhs.map(ph => <option key={ph.id} value={ph.id}>{ph.ph_name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#666666] mb-1.5">Why Critical</label>
+            <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Why Critical</label>
             <textarea rows={2} value={form.why_critical} onChange={e => setForm(f => ({ ...f, why_critical: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
+              className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#666666] mb-1.5">Quarters Pending</label>
+            <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Quarters Pending</label>
             <input type="text" placeholder="e.g. Q1, Q2, Q3" value={form.quarters_pending} onChange={e => setForm(f => ({ ...f, quarters_pending: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]" />
+              className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb]" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#666666] mb-1.5">Last Action Taken</label>
+            <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Last Action Taken</label>
             <textarea rows={2} value={form.last_action} onChange={e => setForm(f => ({ ...f, last_action: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
+              className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#666666] mb-1.5">Next Action</label>
+            <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Next Action</label>
             <textarea rows={2} value={form.next_action} onChange={e => setForm(f => ({ ...f, next_action: e.target.value }))}
-              className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
+              className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb] resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#666666] mb-1.5">Target Closure</label>
+              <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Target Closure</label>
               <input type="date" value={form.target_closure} onChange={e => setForm(f => ({ ...f, target_closure: e.target.value }))}
-                className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]" />
+                className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb]" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#666666] mb-1.5">Escalation</label>
+              <label className="block text-xs font-medium text-[#666666] dark:text-[#888888] mb-1.5">Escalation</label>
               <button
                 onClick={() => setForm(f => ({ ...f, escalation: !f.escalation }))}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${form.escalation ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  form.escalation
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    : 'bg-gray-100 dark:bg-[#222222] text-gray-600 dark:text-[#888888]'
+                }`}
               >
                 {form.escalation ? 'Yes — Escalated' : 'No — Normal'}
               </button>
@@ -288,7 +294,7 @@ function AddCriticalModal({ allPhs, onClose, onSaved }: {
         </div>
 
         <div className="flex justify-end gap-3 mt-6">
-          <button onClick={onClose} className="px-4 py-2 text-sm text-[#666666] hover:text-[#111111] transition-colors">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 text-sm text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white transition-colors">Cancel</button>
           <button
             onClick={handleSave}
             disabled={!form.ph_id || saving}

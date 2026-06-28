@@ -12,8 +12,7 @@ const POCS = ['All', 'Aravind', 'Meenakshi', 'Induma', 'DK']
 const STATUSES_FILTER = ['All', 'Filed', 'In Process', 'Not filed', 'No TDS Till now', 'Refunded to Investors']
 const CHECKPOINTS = ['All', 'Challan Pending', 'Form 26Q Pending', 'Form 16A Pending']
 
-// Right-border separator for quarter group columns (summary table)
-const Q_SEP = 'border-[#e5e5e5]'
+const Q_SEP = 'border-[#e5e5e5] dark:border-[#222222]'
 
 type CheckboxField = 'challan_done' | 'form_26q_done' | 'form_16a_done'
 
@@ -29,7 +28,6 @@ function getDisplayName(email: string): string {
   return map[email] || email.split('@')[0]
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
 export default function StatusBoard({ currentUser }: { currentUser: string }) {
   const [selectedTab, setSelectedTab] = useState<TabMode>('Summary')
   const [phs, setPhs] = useState<PhWithQuarter[]>([])
@@ -104,7 +102,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
 
   useEffect(() => { fetchData() }, [fetchData])
 
-  // ── Quarter-view toggle ──────────────────────────────────────────────────
   async function toggleCheckbox(ph: PhWithQuarter, field: CheckboxField) {
     if (selectedTab === 'Summary') return
     const q = ph.quarterData
@@ -131,7 +128,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     }))
   }
 
-  // ── Summary-view toggle ──────────────────────────────────────────────────
   async function toggleSummaryCheckbox(ph: PhWithAllQuarters, quarter: Quarter, field: CheckboxField) {
     const q = ph.quarters[quarter]
     const newVal = !(q?.[field] ?? false)
@@ -156,7 +152,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     }))
   }
 
-  // ── Comment save (creates quarter record if needed) ──────────────────────
   async function updateComment(ph: PhWithQuarter, comment: string) {
     const q = ph.quarterData
     if (q?.id) {
@@ -204,7 +199,6 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     }))
   }
 
-  // ── Filtering ────────────────────────────────────────────────────────────
   function matchesFilters(ph: { ph_name: string; poc: string; overall_status: string }) {
     if (search && !ph.ph_name.toLowerCase().includes(search.toLowerCase())) return false
     if (pocFilter !== 'All' && ph.poc !== pocFilter) return false
@@ -235,35 +229,35 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
     <div className="p-6">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-xl font-semibold text-[#111111]">TDS Status</h1>
-        <span className="text-xs px-2.5 py-1 bg-[#dbeafe] text-[#2563eb] rounded-full font-medium">FY 2025-26</span>
+        <h1 className="text-xl font-semibold text-[#111111] dark:text-white">TDS Status</h1>
+        <span className="text-xs px-2.5 py-1 bg-[#dbeafe] text-[#2563eb] dark:bg-[#1e3a5f] dark:text-[#60a5fa] rounded-full font-medium">FY 2025-26</span>
       </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-6 gap-3 mb-6">
         {[
-          { label: 'Total PHs',    value: stats.total,     color: 'text-[#111111]' },
-          { label: 'Fully Filed',  value: stats.filed,     color: 'text-green-700' },
-          { label: 'In Process',   value: stats.inProcess, color: 'text-amber-700' },
-          { label: 'Not Filed',    value: stats.notFiled,  color: 'text-red-700'   },
-          { label: 'Refunded',     value: stats.refunded,  color: 'text-blue-700'  },
-          { label: 'Critical PHs', value: stats.critical,  color: 'text-red-700'   },
+          { label: 'Total PHs',    value: stats.total,     color: 'text-[#111111] dark:text-white' },
+          { label: 'Fully Filed',  value: stats.filed,     color: 'text-green-700 dark:text-green-400' },
+          { label: 'In Process',   value: stats.inProcess, color: 'text-amber-700 dark:text-amber-400' },
+          { label: 'Not Filed',    value: stats.notFiled,  color: 'text-red-700 dark:text-red-400'   },
+          { label: 'Refunded',     value: stats.refunded,  color: 'text-blue-700 dark:text-blue-400'  },
+          { label: 'Critical PHs', value: stats.critical,  color: 'text-red-700 dark:text-red-400'   },
         ].map(s => (
-          <div key={s.label} className="bg-white border border-[#e5e5e5] rounded-xl p-4">
+          <div key={s.label} className="bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl p-4">
             <div className={`text-2xl font-bold ${s.color}`}>{loading ? '—' : s.value}</div>
-            <div className="text-xs text-[#666666] mt-0.5">{s.label}</div>
+            <div className="text-xs text-[#666666] dark:text-[#888888] mt-0.5">{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-1 mb-5 bg-white border border-[#e5e5e5] rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-5 bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl p-1 w-fit">
         <button
           onClick={() => setSelectedTab('Summary')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             selectedTab === 'Summary'
               ? 'bg-[#2563eb] text-white'
-              : 'text-[#666666] hover:text-[#111111] hover:bg-[#fafafa]'
+              : 'text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white hover:bg-[#fafafa] dark:hover:bg-[#161616]'
           }`}
         >
           Summary
@@ -275,7 +269,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               selectedTab === q.key
                 ? 'bg-[#2563eb] text-white'
-                : 'text-[#666666] hover:text-[#111111] hover:bg-[#fafafa]'
+                : 'text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white hover:bg-[#fafafa] dark:hover:bg-[#161616]'
             }`}
           >
             {q.label}
@@ -286,7 +280,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
       {/* Search & Filters */}
       <div className="flex gap-3 mb-4 flex-wrap">
         <div className="relative flex-1 min-w-48">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999] dark:text-[#555555]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
@@ -294,24 +288,24 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search production house..."
-            className="w-full pl-9 pr-3 py-2 border border-[#e5e5e5] rounded-lg text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white"
+            className="w-full pl-9 pr-3 py-2 border border-[#e5e5e5] dark:border-[#222222] rounded-lg text-sm text-[#111111] dark:text-white placeholder:text-[#999] dark:placeholder:text-[#555555] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white dark:bg-[#111111]"
           />
         </div>
-        <select value={pocFilter} onChange={e => setPocFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white">
+        <select value={pocFilter} onChange={e => setPocFilter(e.target.value)} className="border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#666666] dark:text-[#888888] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white dark:bg-[#111111]">
           {POCS.map(p => <option key={p} value={p}>{p === 'All' ? 'All POCs' : p}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#666666] dark:text-[#888888] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white dark:bg-[#111111]">
           {STATUSES_FILTER.map(s => <option key={s} value={s}>{s === 'All' ? 'All Statuses' : s}</option>)}
         </select>
         {selectedTab !== 'Summary' && (
-          <select value={checkpointFilter} onChange={e => setCheckpointFilter(e.target.value)} className="border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#666666] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white">
+          <select value={checkpointFilter} onChange={e => setCheckpointFilter(e.target.value)} className="border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#666666] dark:text-[#888888] focus:outline-none focus:ring-1 focus:ring-[#2563eb] bg-white dark:bg-[#111111]">
             {CHECKPOINTS.map(c => <option key={c} value={c}>{c === 'All' ? 'All Checkpoints' : c}</option>)}
           </select>
         )}
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-[#e5e5e5] rounded-xl overflow-hidden">
+      <div className="bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl overflow-hidden">
         <div className="overflow-x-auto">
           {selectedTab === 'Summary' ? (
             <SummaryTable
@@ -336,7 +330,7 @@ export default function StatusBoard({ currentUser }: { currentUser: string }) {
             />
           )}
         </div>
-        <div className="px-5 py-3 border-t border-[#e5e5e5] text-sm text-[#666666]">
+        <div className="px-5 py-3 border-t border-[#e5e5e5] dark:border-[#222222] text-sm text-[#666666] dark:text-[#888888]">
           Showing {displayCount} of {totalCount} production houses
         </div>
       </div>
@@ -374,32 +368,30 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
   return (
     <table className="w-full" style={{ minWidth: 1140, fontSize: 14 }}>
       <thead>
-        {/* Row 1: quarter group pills */}
-        <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-          <th rowSpan={2} className="text-left px-5 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-[220px] align-bottom whitespace-nowrap">
+        <tr className="border-b border-[#e5e5e5] dark:border-[#222222] bg-[#fafafa] dark:bg-[#161616]">
+          <th rowSpan={2} className="text-left px-5 py-4 font-semibold text-[#666666] dark:text-[#888888] border-r border-[#e5e5e5] dark:border-[#222222] w-[220px] align-bottom whitespace-nowrap">
             PH Name
           </th>
-          <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-24 align-bottom">
+          <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] border-r border-[#e5e5e5] dark:border-[#222222] w-24 align-bottom">
             POC
           </th>
-          <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] border-r border-[#e5e5e5] w-36 align-bottom whitespace-nowrap">
+          <th rowSpan={2} className="text-left px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] border-r border-[#e5e5e5] dark:border-[#222222] w-36 align-bottom whitespace-nowrap">
             Overall Status
           </th>
           {(Object.keys(Q_LABELS) as Quarter[]).map((q, qi) => (
-            <th key={q} colSpan={3} className={`text-center px-3 pt-3 pb-2 border-r border-[#e5e5e5] ${qi > 0 ? 'border-l-2 border-l-[#e5e5e5]' : ''}`}>
-              <span className="text-sm font-semibold text-[#444]">{q}</span>
+            <th key={q} colSpan={3} className={`text-center px-3 pt-3 pb-2 border-r border-[#e5e5e5] dark:border-[#222222] ${qi > 0 ? 'border-l-2 border-l-[#e5e5e5] dark:border-l-[#222222]' : ''}`}>
+              <span className="text-sm font-semibold text-[#444] dark:text-[#bbbbbb]">{q}</span>
             </th>
           ))}
-          <th rowSpan={2} className="text-center px-4 py-4 font-semibold text-[#666666] w-20 align-bottom">
+          <th rowSpan={2} className="text-center px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-20 align-bottom">
             Actions
           </th>
         </tr>
-        {/* Row 2: sub-column labels */}
-        <tr className="border-b-2 border-[#e5e5e5] bg-[#fafafa]">
+        <tr className="border-b-2 border-[#e5e5e5] dark:border-[#222222] bg-[#fafafa] dark:bg-[#161616]">
           {(Object.keys(Q_LABELS) as Quarter[]).map(q =>
             (['C', '26Q', '16A'] as const).map((sub, i) => (
               <th key={`${q}-${sub}`}
-                className={`text-center px-3 pb-3 pt-1 text-xs font-medium text-[#999] w-16 ${i === 2 ? `border-r ${Q_SEP}` : ''}`}
+                className={`text-center px-3 pb-3 pt-1 text-xs font-medium text-[#999] dark:text-[#555555] w-16 ${i === 2 ? `border-r ${Q_SEP}` : ''}`}
               >
                 {sub}
               </th>
@@ -409,9 +401,9 @@ function SummaryTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onMar
       </thead>
       <tbody>
         {loading ? (
-          <tr><td colSpan={16} className="text-center py-16 text-[#666666]">Loading...</td></tr>
+          <tr><td colSpan={16} className="text-center py-16 text-[#666666] dark:text-[#888888]">Loading...</td></tr>
         ) : phs.length === 0 ? (
-          <tr><td colSpan={16} className="text-center py-16 text-[#666666]">No production houses found</td></tr>
+          <tr><td colSpan={16} className="text-center py-16 text-[#666666] dark:text-[#888888]">No production houses found</td></tr>
         ) : (
           phs.map((ph, idx) => (
             <SummaryRow
@@ -440,50 +432,46 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
   onMarkCritical: () => void
   onStatusChange: (newStatus: string) => void
 }) {
-  const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'
+  const rowBg = idx % 2 === 0 ? 'bg-white dark:bg-[#111111]' : 'bg-[#fafafa] dark:bg-[#161616]'
   const fields: CheckboxField[] = ['challan_done', 'form_26q_done', 'form_16a_done']
   const isRefunded = ph.overall_status === 'Refunded to Investors'
   const isNoTDS = ph.overall_status === 'No TDS Till now'
   const skipCircles = isRefunded || isNoTDS
 
   return (
-    <tr className={`${rowBg} border-b border-[#f0f0f0] hover:bg-blue-50/20 transition-colors`}>
-      {/* PH Name — fix: dark #111111, no purple tint */}
-      <td className="px-5 py-4 border-r border-[#e5e5e5]">
+    <tr className={`${rowBg} border-b border-[#f0f0f0] dark:border-[#1e1e1e] hover:bg-blue-50/20 dark:hover:bg-white/[0.02] transition-colors`}>
+      <td className="px-5 py-4 border-r border-[#e5e5e5] dark:border-[#222222]">
         <button
           onClick={onOpenDetail}
-          className="font-semibold text-[#111111] hover:underline text-left leading-snug"
+          className="font-semibold text-[#111111] dark:text-white hover:underline text-left leading-snug"
         >
           {ph.ph_name}
         </button>
         {isCritical && (
-          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full font-medium align-middle">
+          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full font-medium align-middle">
             Critical
           </span>
         )}
       </td>
 
-      {/* POC */}
-      <td className="px-4 py-4 text-[#666666] border-r border-[#e5e5e5] whitespace-nowrap">
+      <td className="px-4 py-4 text-[#666666] dark:text-[#888888] border-r border-[#e5e5e5] dark:border-[#222222] whitespace-nowrap">
         {ph.poc}
       </td>
 
-      {/* Overall Status */}
-      <td className="px-4 py-4 border-r border-[#e5e5e5]">
+      <td className="px-4 py-4 border-r border-[#e5e5e5] dark:border-[#222222]">
         <StatusDropdown phId={ph.id} status={ph.overall_status} onStatusChange={onStatusChange} />
       </td>
 
-      {/* Quarter columns OR simple dash for Refunded/NoTDS or has_tds=false */}
       {skipCircles ? (
-        <td colSpan={12} className="px-4 py-4 text-center border-r border-[#e5e5e5]">
-          <span className="text-[#aaa]">—</span>
+        <td colSpan={12} className="px-4 py-4 text-center border-r border-[#e5e5e5] dark:border-[#222222]">
+          <span className="text-[#aaa] dark:text-[#444444]">—</span>
         </td>
       ) : (
         (Object.keys(Q_LABELS) as Quarter[]).flatMap(q => {
           if (ph.quarters[q]?.has_tds === false) {
             return [
               <td key={`${q}-notds`} colSpan={3} className={`px-2 py-4 text-center border-r ${Q_SEP}`}>
-                <span className="text-[#aaa]">—</span>
+                <span className="text-[#aaa] dark:text-[#444444]">—</span>
               </td>
             ]
           }
@@ -496,17 +484,16 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
                 type="checkbox"
                 checked={ph.quarters[q]?.[field] ?? false}
                 onChange={() => onToggle(q, field)}
-                className="w-4 h-4 cursor-pointer accent-[#111111]"
+                className="w-4 h-4 cursor-pointer accent-[#2563eb]"
               />
             </td>
           ))
         })
       )}
 
-      {/* Actions */}
       <td className="px-4 py-4">
         <div className="flex items-center justify-center gap-2">
-          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#2563eb] transition-colors">
+          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] dark:text-[#444444] hover:text-[#2563eb] dark:hover:text-[#60a5fa] transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -514,7 +501,7 @@ function SummaryRow({ ph, idx, isCritical, onOpenDetail, onToggle, onMarkCritica
           <button
             onClick={onMarkCritical}
             title={isCritical ? 'Already critical' : 'Mark as critical'}
-            className={`transition-colors ${isCritical ? 'text-red-500' : 'text-[#aaa] hover:text-red-500'}`}
+            className={`transition-colors ${isCritical ? 'text-red-500' : 'text-[#aaa] dark:text-[#444444] hover:text-red-500'}`}
           >
             <svg className="w-4 h-4" fill={isCritical ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -541,22 +528,22 @@ function QuarterTable({ phs, criticalIds, loading, onOpenDetail, onToggle, onCom
   return (
     <table className="w-full" style={{ fontSize: 14 }}>
       <thead>
-        <tr className="border-b border-[#e5e5e5] bg-[#fafafa]">
-          <th className="text-left px-5 py-4 font-semibold text-[#666666] w-[240px]">PH Name</th>
-          <th className="text-left px-4 py-4 font-semibold text-[#666666] w-24">POC</th>
-          <th className="text-left px-4 py-4 font-semibold text-[#666666] w-36">Overall Status</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-24">Challan</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-24">Form 26Q</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-24">Form 16A</th>
-          <th className="text-left px-4 py-4 font-semibold text-[#666666]">Comment</th>
-          <th className="text-center px-4 py-4 font-semibold text-[#666666] w-20">Actions</th>
+        <tr className="border-b border-[#e5e5e5] dark:border-[#222222] bg-[#fafafa] dark:bg-[#161616]">
+          <th className="text-left px-5 py-4 font-semibold text-[#666666] dark:text-[#888888] w-[240px]">PH Name</th>
+          <th className="text-left px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-24">POC</th>
+          <th className="text-left px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-36">Overall Status</th>
+          <th className="text-center px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-24">Challan</th>
+          <th className="text-center px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-24">Form 26Q</th>
+          <th className="text-center px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-24">Form 16A</th>
+          <th className="text-left px-4 py-4 font-semibold text-[#666666] dark:text-[#888888]">Comment</th>
+          <th className="text-center px-4 py-4 font-semibold text-[#666666] dark:text-[#888888] w-20">Actions</th>
         </tr>
       </thead>
       <tbody>
         {loading ? (
-          <tr><td colSpan={8} className="text-center py-16 text-[#666666]">Loading...</td></tr>
+          <tr><td colSpan={8} className="text-center py-16 text-[#666666] dark:text-[#888888]">Loading...</td></tr>
         ) : phs.length === 0 ? (
-          <tr><td colSpan={8} className="text-center py-16 text-[#666666]">No production houses found</td></tr>
+          <tr><td colSpan={8} className="text-center py-16 text-[#666666] dark:text-[#888888]">No production houses found</td></tr>
         ) : (
           phs.map((ph, idx) => (
             <TableRow
@@ -589,7 +576,7 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
 }) {
   const [editingComment, setEditingComment] = useState(false)
   const [comment, setComment] = useState(ph.quarterData?.comment ?? '')
-  const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-[#fafafa]'
+  const rowBg = idx % 2 === 0 ? 'bg-white dark:bg-[#111111]' : 'bg-[#fafafa] dark:bg-[#161616]'
 
   useEffect(() => { setComment(ph.quarterData?.comment ?? '') }, [ph.quarterData?.comment])
 
@@ -599,30 +586,30 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
   }
 
   return (
-    <tr className={`${rowBg} border-b border-[#f0f0f0] hover:bg-blue-50/20 transition-colors`}>
+    <tr className={`${rowBg} border-b border-[#f0f0f0] dark:border-[#1e1e1e] hover:bg-blue-50/20 dark:hover:bg-white/[0.02] transition-colors`}>
       <td className="px-5 py-4">
-        <button onClick={onOpenDetail} className="font-semibold text-[#111111] hover:underline text-left leading-snug">
+        <button onClick={onOpenDetail} className="font-semibold text-[#111111] dark:text-white hover:underline text-left leading-snug">
           {ph.ph_name}
         </button>
         {isCritical && (
-          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-100 text-red-600 rounded-full font-medium align-middle">Critical</span>
+          <span className="ml-2 text-[10px] px-1.5 py-0.5 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-full font-medium align-middle">Critical</span>
         )}
       </td>
-      <td className="px-4 py-4 text-[#666666]">{ph.poc}</td>
+      <td className="px-4 py-4 text-[#666666] dark:text-[#888888]">{ph.poc}</td>
       <td className="px-4 py-4">
         <StatusDropdown phId={ph.id} status={ph.overall_status} onStatusChange={onStatusChange} />
       </td>
       {ph.quarterData?.has_tds === false
-        ? [<td key="dash" colSpan={3} className="px-4 py-4 text-center text-[#aaa]">—</td>]
+        ? [<td key="dash" colSpan={3} className="px-4 py-4 text-center text-[#aaa] dark:text-[#444444]">—</td>]
         : [
             <td key="challan" className="px-4 py-4 text-center">
-              <input type="checkbox" checked={ph.quarterData?.challan_done ?? false} onChange={() => onToggle('challan_done')} className="w-4 h-4 cursor-pointer accent-[#111111]" />
+              <input type="checkbox" checked={ph.quarterData?.challan_done ?? false} onChange={() => onToggle('challan_done')} className="w-4 h-4 cursor-pointer accent-[#2563eb]" />
             </td>,
             <td key="26q" className="px-4 py-4 text-center">
-              <input type="checkbox" checked={ph.quarterData?.form_26q_done ?? false} onChange={() => onToggle('form_26q_done')} className="w-4 h-4 cursor-pointer accent-[#111111]" />
+              <input type="checkbox" checked={ph.quarterData?.form_26q_done ?? false} onChange={() => onToggle('form_26q_done')} className="w-4 h-4 cursor-pointer accent-[#2563eb]" />
             </td>,
             <td key="16a" className="px-4 py-4 text-center">
-              <input type="checkbox" checked={ph.quarterData?.form_16a_done ?? false} onChange={() => onToggle('form_16a_done')} className="w-4 h-4 cursor-pointer accent-[#111111]" />
+              <input type="checkbox" checked={ph.quarterData?.form_16a_done ?? false} onChange={() => onToggle('form_16a_done')} className="w-4 h-4 cursor-pointer accent-[#2563eb]" />
             </td>,
           ]
       }
@@ -634,21 +621,21 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
             onChange={e => setComment(e.target.value)}
             onBlur={handleBlur}
             rows={2}
-            className="w-full border border-[#2563eb] rounded-lg px-3 py-2 text-sm resize-none focus:outline-none text-[#111111]"
+            className="w-full border border-[#2563eb] rounded-lg px-3 py-2 text-sm resize-none focus:outline-none text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a]"
             placeholder="Add comment..."
           />
         ) : (
           <div
             onClick={() => setEditingComment(true)}
-            className="min-h-[36px] px-3 py-2 rounded-lg cursor-text hover:bg-[#f5f5f5] transition-colors text-[#666666] text-sm border border-transparent hover:border-[#e5e5e5]"
+            className="min-h-[36px] px-3 py-2 rounded-lg cursor-text hover:bg-[#f5f5f5] dark:hover:bg-[#1e1e1e] transition-colors text-[#666666] dark:text-[#888888] text-sm border border-transparent hover:border-[#e5e5e5] dark:hover:border-[#333333]"
           >
-            {comment || <span className="italic text-[#bbb]">Click to add note...</span>}
+            {comment || <span className="italic text-[#bbb] dark:text-[#444444]">Click to add note...</span>}
           </div>
         )}
       </td>
       <td className="px-4 py-4">
         <div className="flex items-center justify-center gap-2">
-          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] hover:text-[#2563eb] transition-colors">
+          <button onClick={onOpenDetail} title="Open conversation" className="text-[#aaa] dark:text-[#444444] hover:text-[#2563eb] dark:hover:text-[#60a5fa] transition-colors">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
@@ -656,7 +643,7 @@ function TableRow({ ph, idx, isCritical, onOpenDetail, onToggle, onCommentSave, 
           <button
             onClick={onMarkCritical}
             title={isCritical ? 'Already critical' : 'Mark as critical'}
-            className={`transition-colors ${isCritical ? 'text-red-500' : 'text-[#aaa] hover:text-red-500'}`}
+            className={`transition-colors ${isCritical ? 'text-red-500' : 'text-[#aaa] dark:text-[#444444] hover:text-red-500'}`}
           >
             <svg className="w-4 h-4" fill={isCritical ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />

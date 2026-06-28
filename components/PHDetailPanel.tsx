@@ -169,19 +169,19 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
   return (
     <div className="fixed inset-0 z-40 flex justify-end" onClick={onClose}>
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/20" />
+      <div className="absolute inset-0 bg-black/20 dark:bg-black/50" />
 
       {/* Panel */}
       <div
-        className="relative w-[500px] bg-white h-full shadow-2xl flex flex-col overflow-hidden"
+        className="relative w-[500px] bg-white dark:bg-[#111111] h-full shadow-2xl flex flex-col overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-[#e5e5e5] flex items-start justify-between gap-3">
+        <div className="px-5 py-4 border-b border-[#e5e5e5] dark:border-[#222222] flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold text-[#111111] text-base leading-tight truncate">{ph.ph_name}</h2>
+            <h2 className="font-semibold text-[#111111] dark:text-white text-base leading-tight truncate">{ph.ph_name}</h2>
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-xs text-[#666666]">{ph.poc}</span>
+              <span className="text-xs text-[#666666] dark:text-[#888888]">{ph.poc}</span>
               <StatusDropdown
                 phId={ph.id}
                 status={status}
@@ -189,12 +189,12 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                 size="xs"
               />
               {ph.is_critical && (
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium bg-red-100 text-red-700">Critical</span>
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Critical</span>
               )}
             </div>
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button onClick={onClose} className="text-[#666666] hover:text-[#111111] transition-colors">
+            <button onClick={onClose} className="text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white transition-colors">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -206,13 +206,13 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
         <div className="flex-1 overflow-y-auto">
           {/* Quarter grid */}
           <div className="p-5">
-            <h3 className="text-xs font-semibold text-[#666666] uppercase tracking-wider mb-3">Filing Status</h3>
+            <h3 className="text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider mb-3">Filing Status</h3>
             <div className="grid grid-cols-2 gap-3">
               {QUARTERS.map(({ key, label }) => {
                 const q = quarters[key]
                 return (
-                  <div key={key} className="border border-[#e5e5e5] rounded-xl p-3 bg-[#fafafa]">
-                    <div className="text-xs font-semibold text-[#111111] mb-2.5">{label.replace(' — ', ' ')}</div>
+                  <div key={key} className="border border-[#e5e5e5] dark:border-[#222222] rounded-xl p-3 bg-[#fafafa] dark:bg-[#161616]">
+                    <div className="text-xs font-semibold text-[#111111] dark:text-white mb-2.5">{label.replace(' — ', ' ')}</div>
                     <div className="space-y-1.5">
                       {[
                         { field: 'challan_done' as const, label: 'Challan' },
@@ -224,9 +224,9 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                             type="checkbox"
                             checked={q?.[field] ?? false}
                             onChange={() => toggleCheckbox(key, field)}
-                            className="flex-shrink-0"
+                            className="flex-shrink-0 accent-[#2563eb]"
                           />
-                          <span className="text-xs text-[#666666]">{fl}</span>
+                          <span className="text-xs text-[#666666] dark:text-[#888888]">{fl}</span>
                         </label>
                       ))}
                     </div>
@@ -242,10 +242,10 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
 
           {/* Conversation */}
           <div className="px-5 pb-2">
-            <h3 className="text-xs font-semibold text-[#666666] uppercase tracking-wider mb-3">Conversation</h3>
+            <h3 className="text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider mb-3">Conversation</h3>
             <div className="space-y-3 min-h-[80px]">
               {messages.length === 0 ? (
-                <p className="text-xs text-[#666666] text-center py-4">No messages yet. Start the conversation.</p>
+                <p className="text-xs text-[#666666] dark:text-[#888888] text-center py-4">No messages yet. Start the conversation.</p>
               ) : (
                 messages.map(msg => (
                   <div key={msg.id} className="flex gap-2.5">
@@ -254,14 +254,14 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                     </div>
                     <div className="flex-1">
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-xs font-semibold text-[#111111]">{msg.sender_name}</span>
-                        <span className="text-[10px] text-[#666666]">
+                        <span className="text-xs font-semibold text-[#111111] dark:text-white">{msg.sender_name}</span>
+                        <span className="text-[10px] text-[#666666] dark:text-[#888888]">
                           {new Date(msg.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
                         </span>
                       </div>
-                      <p className="text-xs text-[#333333] mt-0.5 leading-relaxed whitespace-pre-wrap"
+                      <p className="text-xs text-[#333333] dark:text-[#cccccc] mt-0.5 leading-relaxed whitespace-pre-wrap"
                         dangerouslySetInnerHTML={{
-                          __html: msg.content.replace(/@(\w+)/g, '<span class="text-[#2563eb] font-medium">@$1</span>')
+                          __html: msg.content.replace(/@(\w+)/g, '<span class="text-[#2563eb] dark:text-[#60a5fa] font-medium">@$1</span>')
                         }}
                       />
                     </div>
@@ -274,15 +274,19 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
         </div>
 
         {/* Message input */}
-        <div className="border-t border-[#e5e5e5] p-4 bg-white">
+        <div className="border-t border-[#e5e5e5] dark:border-[#222222] p-4 bg-white dark:bg-[#111111]">
           <div className="relative">
             {showMentions && filteredMembers.length > 0 && (
-              <div className="absolute bottom-full left-0 mb-1 bg-white border border-[#e5e5e5] rounded-lg shadow-lg overflow-hidden z-10">
+              <div className="absolute bottom-full left-0 mb-1 bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-lg shadow-lg overflow-hidden z-10">
                 {filteredMembers.map((m, i) => (
                   <div
                     key={m}
                     onClick={() => insertMention(m)}
-                    className={`px-3 py-2 text-xs cursor-pointer transition-colors ${i === mentionIndex ? 'bg-[#dbeafe] text-[#2563eb]' : 'text-[#111111] hover:bg-[#fafafa]'}`}
+                    className={`px-3 py-2 text-xs cursor-pointer transition-colors ${
+                      i === mentionIndex
+                        ? 'bg-[#dbeafe] dark:bg-[#1e3a5f] text-[#2563eb] dark:text-[#60a5fa]'
+                        : 'text-[#111111] dark:text-white hover:bg-[#fafafa] dark:hover:bg-[#161616]'
+                    }`}
                   >
                     @{m}
                   </div>
@@ -297,7 +301,7 @@ export default function PHDetailPanel({ ph, currentUser, onClose, onUpdate }: Pr
                 onKeyDown={handleKeyDown}
                 placeholder="Message... (@ to mention, Enter to send)"
                 rows={2}
-                className="flex-1 resize-none border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm text-[#111111] placeholder:text-[#999] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
+                className="flex-1 resize-none border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm text-[#111111] dark:text-white placeholder:text-[#999] dark:placeholder:text-[#555555] bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
               />
               <button
                 onClick={sendMessage}
@@ -330,7 +334,7 @@ function QuarterComment({ value, onSave }: { value: string; onSave: (v: string) 
         onChange={e => setText(e.target.value)}
         onBlur={() => { setEditing(false); onSave(text) }}
         rows={2}
-        className="w-full mt-2 text-xs border border-[#2563eb] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111]"
+        className="w-full mt-2 text-xs border border-[#2563eb] rounded-lg px-2 py-1.5 resize-none focus:outline-none text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a]"
         placeholder="Add comment..."
       />
     )
@@ -339,7 +343,7 @@ function QuarterComment({ value, onSave }: { value: string; onSave: (v: string) 
   return (
     <div
       onClick={() => setEditing(true)}
-      className="mt-2 text-xs text-[#666666] min-h-[20px] cursor-text hover:text-[#111111] transition-colors"
+      className="mt-2 text-xs text-[#666666] dark:text-[#888888] min-h-[20px] cursor-text hover:text-[#111111] dark:hover:text-white transition-colors"
     >
       {text || <span className="italic opacity-50">Add comment...</span>}
     </div>

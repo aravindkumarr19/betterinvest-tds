@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
 type Tab = 'form16a' | 'tracker' | 'reconciliation'
 type UploadSubTab = 'pdf' | 'zip'
 
@@ -42,33 +40,29 @@ interface FailedFile {
   error: string
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
 function fmt(n: number | null | undefined): string {
   if (n === null || n === undefined) return '—'
   return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 function statusBadge(status: RecRow['status']) {
-  if (status === 'Matched') return 'bg-green-100 text-green-700'
-  if (status === 'TDS Mismatch') return 'bg-red-100 text-red-700'
-  return 'bg-amber-100 text-amber-700'
+  if (status === 'Matched') return 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+  if (status === 'TDS Mismatch') return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+  return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
 }
-
-// ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function TdsReconciliation() {
   const [tab, setTab] = useState<Tab>('form16a')
 
   return (
-    <div className="min-h-screen bg-[#f8f8f8]">
+    <div className="min-h-screen bg-[#f8f8f8] dark:bg-[#0a0a0a]">
       <div className="max-w-6xl mx-auto px-6 py-8">
         <div className="mb-6">
-          <h1 className="text-xl font-semibold text-[#111111]">TDS Reconciliation</h1>
-          <p className="text-sm text-[#666666] mt-0.5">Upload Form 16A, manage tracker, and reconcile TDS amounts</p>
+          <h1 className="text-xl font-semibold text-[#111111] dark:text-white">TDS Reconciliation</h1>
+          <p className="text-sm text-[#666666] dark:text-[#888888] mt-0.5">Upload Form 16A, manage tracker, and reconcile TDS amounts</p>
         </div>
 
-        <div className="flex gap-1 mb-6 border-b border-[#e5e5e5]">
+        <div className="flex gap-1 mb-6 border-b border-[#e5e5e5] dark:border-[#222222]">
           {([
             { key: 'form16a', label: 'Form 16A Upload' },
             { key: 'tracker', label: 'TDS Tracker' },
@@ -79,8 +73,8 @@ export default function TdsReconciliation() {
               onClick={() => setTab(t.key)}
               className={`px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 tab === t.key
-                  ? 'border-[#2563eb] text-[#2563eb]'
-                  : 'border-transparent text-[#666666] hover:text-[#111111]'
+                  ? 'border-[#2563eb] text-[#2563eb] dark:text-[#60a5fa] dark:border-[#60a5fa]'
+                  : 'border-transparent text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white'
               }`}
             >
               {t.label}
@@ -95,8 +89,6 @@ export default function TdsReconciliation() {
     </div>
   )
 }
-
-// ─── Tab 1: Form 16A Upload ───────────────────────────────────────────────────
 
 function Form16ATab() {
   const [subTab, setSubTab] = useState<UploadSubTab>('pdf')
@@ -211,7 +203,7 @@ function Form16ATab() {
   return (
     <div className="space-y-6">
       {/* Sub-tabs */}
-      <div className="flex gap-1 bg-[#f0f0f0] rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-[#f0f0f0] dark:bg-[#1a1a1a] rounded-lg p-1 w-fit">
         {([
           { key: 'pdf', label: 'Upload PDFs' },
           { key: 'zip', label: 'Upload ZIP' },
@@ -220,7 +212,9 @@ function Form16ATab() {
             key={t.key}
             onClick={() => setSubTab(t.key)}
             className={`px-4 py-1.5 text-xs font-medium rounded-md transition-colors ${
-              subTab === t.key ? 'bg-white text-[#111111] shadow-sm' : 'text-[#666666] hover:text-[#111111]'
+              subTab === t.key
+                ? 'bg-white dark:bg-[#222222] text-[#111111] dark:text-white shadow-sm'
+                : 'text-[#666666] dark:text-[#888888] hover:text-[#111111] dark:hover:text-white'
             }`}
           >
             {t.label}
@@ -235,7 +229,9 @@ function Form16ATab() {
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
         className={`border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors ${
-          dragging ? 'border-[#2563eb] bg-[#dbeafe]/30' : 'border-[#e5e5e5] hover:border-[#2563eb] bg-white'
+          dragging
+            ? 'border-[#2563eb] bg-[#dbeafe]/30 dark:bg-[#1e3a5f]/20'
+            : 'border-[#e5e5e5] dark:border-[#222222] hover:border-[#2563eb] bg-white dark:bg-[#111111]'
         }`}
       >
         <input ref={pdfInputRef} type="file" accept=".pdf" multiple className="hidden"
@@ -244,14 +240,14 @@ function Form16ATab() {
           onChange={e => e.target.files && handleFiles(e.target.files)} />
 
         <div className="flex flex-col items-center gap-3">
-          <svg className="w-10 h-10 text-[#2563eb]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <svg className="w-10 h-10 text-[#2563eb] dark:text-[#60a5fa]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
           </svg>
           <div>
-            <p className="text-sm font-medium text-[#111111]">
+            <p className="text-sm font-medium text-[#111111] dark:text-white">
               {subTab === 'pdf' ? 'Drop PDF files here, or click to browse' : 'Drop a ZIP file here, or click to browse'}
             </p>
-            <p className="text-xs text-[#666666] mt-1">
+            <p className="text-xs text-[#666666] dark:text-[#888888] mt-1">
               {subTab === 'pdf' ? 'Select one or more PDF files' : 'Select a single ZIP archive containing PDFs'}
             </p>
           </div>
@@ -261,7 +257,7 @@ function Form16ATab() {
       {/* Live processing progress */}
       {processing && processProgress && (
         <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs text-[#666666]">
+          <div className="flex items-center justify-between text-xs text-[#666666] dark:text-[#888888]">
             <span>
               {processProgress.current === 0
                 ? 'Starting...'
@@ -269,7 +265,7 @@ function Form16ATab() {
             </span>
             <span>{Math.round((processProgress.current / processProgress.total) * 100)}%</span>
           </div>
-          <div className="w-full bg-[#e5e5e5] rounded-full h-1.5 overflow-hidden">
+          <div className="w-full bg-[#e5e5e5] dark:bg-[#222222] rounded-full h-1.5 overflow-hidden">
             <div
               className="bg-[#2563eb] h-1.5 rounded-full transition-all duration-300"
               style={{ width: `${Math.max(2, Math.round((processProgress.current / processProgress.total) * 100))}%` }}
@@ -279,26 +275,26 @@ function Form16ATab() {
       )}
 
       {showHalfwayMsg && (
-        <p className="text-sm text-center text-[#2563eb] animate-pulse py-1">
+        <p className="text-sm text-center text-[#2563eb] dark:text-[#60a5fa] animate-pulse py-1">
           Numbers are being crunched — hang tight! 💧
         </p>
       )}
 
       {!processing && completionMsg && (
-        <p className="text-sm text-center text-green-600 font-medium py-1">{completionMsg}</p>
+        <p className="text-sm text-center text-green-600 dark:text-green-400 font-medium py-1">{completionMsg}</p>
       )}
 
       {uploadError && (
-        <p className="text-sm text-red-600 bg-red-50 px-4 py-2 rounded-lg">{uploadError}</p>
+        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-4 py-2 rounded-lg">{uploadError}</p>
       )}
 
       {/* Failed files */}
       {failed.length > 0 && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-          <p className="text-xs font-semibold text-red-700 mb-2">Failed to process ({failed.length})</p>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
+          <p className="text-xs font-semibold text-red-700 dark:text-red-400 mb-2">Failed to process ({failed.length})</p>
           <ul className="space-y-1">
             {failed.map((f, i) => (
-              <li key={i} className="text-xs text-red-600">
+              <li key={i} className="text-xs text-red-600 dark:text-red-400">
                 <span className="font-mono font-medium">{f.file}</span> — {f.error}
               </li>
             ))}
@@ -308,13 +304,13 @@ function Form16ATab() {
 
       {/* Extracted preview */}
       {extracted.length > 0 && (
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#e5e5e5] flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-[#111111]">Extracted ({extracted.length})</h2>
+        <div className="bg-white dark:bg-[#111111] rounded-xl border border-[#e5e5e5] dark:border-[#222222] overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#e5e5e5] dark:border-[#222222] flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[#111111] dark:text-white">Extracted ({extracted.length})</h2>
             <div className="flex gap-2">
               <button
                 onClick={() => { setExtracted([]); setFailed([]) }}
-                className="px-3 py-1.5 text-xs font-medium text-[#666666] border border-[#e5e5e5] rounded-lg hover:bg-[#fafafa] transition-colors"
+                className="px-3 py-1.5 text-xs font-medium text-[#666666] dark:text-[#888888] border border-[#e5e5e5] dark:border-[#222222] rounded-lg hover:bg-[#fafafa] dark:hover:bg-[#161616] transition-colors"
               >
                 Clear All
               </button>
@@ -330,22 +326,22 @@ function Form16ATab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">Document Name</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">PAN</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] uppercase tracking-wider">TDS Amount</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-[#666666] uppercase tracking-wider">Remove</th>
+                <tr className="bg-[#fafafa] dark:bg-[#161616] border-b border-[#e5e5e5] dark:border-[#222222]">
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Document Name</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">PAN</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">TDS Amount</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Remove</th>
                 </tr>
               </thead>
               <tbody>
                 {extracted.map((row, i) => (
-                  <tr key={i} className="border-b border-[#e5e5e5] last:border-0 hover:bg-[#fafafa]">
-                    <td className="px-5 py-3 text-[#111111] font-medium max-w-[220px] truncate">{row.document_name}</td>
-                    <td className="px-5 py-3 font-mono text-[#111111]">{row.pan || <span className="text-[#aaa]">Not found</span>}</td>
-                    <td className="px-5 py-3 text-right text-[#111111]">{fmt(row.tds_amount)}</td>
+                  <tr key={i} className="border-b border-[#e5e5e5] dark:border-[#222222] last:border-0 hover:bg-[#fafafa] dark:hover:bg-[#161616]">
+                    <td className="px-5 py-3 text-[#111111] dark:text-white font-medium max-w-[220px] truncate">{row.document_name}</td>
+                    <td className="px-5 py-3 font-mono text-[#111111] dark:text-white">{row.pan || <span className="text-[#aaa] dark:text-[#444444]">Not found</span>}</td>
+                    <td className="px-5 py-3 text-right text-[#111111] dark:text-white">{fmt(row.tds_amount)}</td>
                     <td className="px-5 py-3 text-center">
                       <button onClick={() => setExtracted(prev => prev.filter((_, j) => j !== i))}
-                        className="text-[#666666] hover:text-red-500 transition-colors">
+                        className="text-[#666666] dark:text-[#888888] hover:text-red-500 transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -361,13 +357,13 @@ function Form16ATab() {
 
       {/* Saved records */}
       {saved.length > 0 && (
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
-          <div className="px-5 py-3 border-b border-[#e5e5e5] flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-[#111111]">Saved Records ({saved.length})</h2>
+        <div className="bg-white dark:bg-[#111111] rounded-xl border border-[#e5e5e5] dark:border-[#222222] overflow-hidden">
+          <div className="px-5 py-3 border-b border-[#e5e5e5] dark:border-[#222222] flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-[#111111] dark:text-white">Saved Records ({saved.length})</h2>
             <button
               onClick={clearAll}
               disabled={clearing}
-              className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+              className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50"
             >
               {clearing ? 'Clearing...' : 'Clear All'}
             </button>
@@ -375,25 +371,25 @@ function Form16ATab() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">Document Name</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">PAN</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] uppercase tracking-wider">TDS Amount</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">Uploaded</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-[#666666] uppercase tracking-wider">Delete</th>
+                <tr className="bg-[#fafafa] dark:bg-[#161616] border-b border-[#e5e5e5] dark:border-[#222222]">
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Document Name</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">PAN</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">TDS Amount</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Uploaded</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Delete</th>
                 </tr>
               </thead>
               <tbody>
                 {saved.map(row => (
-                  <tr key={row.id} className="border-b border-[#e5e5e5] last:border-0 hover:bg-[#fafafa]">
-                    <td className="px-5 py-3 text-[#111111] max-w-[220px] truncate">{row.document_name || '—'}</td>
-                    <td className="px-5 py-3 font-mono text-[#111111]">{row.pan || <span className="text-[#aaa]">—</span>}</td>
-                    <td className="px-5 py-3 text-right text-[#111111]">{fmt(row.tds_amount)}</td>
-                    <td className="px-5 py-3 text-xs text-[#666666]">
+                  <tr key={row.id} className="border-b border-[#e5e5e5] dark:border-[#222222] last:border-0 hover:bg-[#fafafa] dark:hover:bg-[#161616]">
+                    <td className="px-5 py-3 text-[#111111] dark:text-white max-w-[220px] truncate">{row.document_name || '—'}</td>
+                    <td className="px-5 py-3 font-mono text-[#111111] dark:text-white">{row.pan || <span className="text-[#aaa] dark:text-[#444444]">—</span>}</td>
+                    <td className="px-5 py-3 text-right text-[#111111] dark:text-white">{fmt(row.tds_amount)}</td>
+                    <td className="px-5 py-3 text-xs text-[#666666] dark:text-[#888888]">
                       {new Date(row.uploaded_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
                     <td className="px-5 py-3 text-center">
-                      <button onClick={() => deleteRow(row.id)} className="text-[#666666] hover:text-red-500 transition-colors">
+                      <button onClick={() => deleteRow(row.id)} className="text-[#666666] dark:text-[#888888] hover:text-red-500 transition-colors">
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -408,13 +404,11 @@ function Form16ATab() {
       )}
 
       {saved.length === 0 && extracted.length === 0 && !processing && (
-        <p className="text-sm text-[#666666] text-center py-4">No Form 16A records yet. Upload files above.</p>
+        <p className="text-sm text-[#666666] dark:text-[#888888] text-center py-4">No Form 16A records yet. Upload files above.</p>
       )}
     </div>
   )
 }
-
-// ─── Tab 2: TDS Tracker ───────────────────────────────────────────────────────
 
 interface EditableTrackerRow extends TrackerRow {
   _dirty?: boolean
@@ -511,7 +505,7 @@ function TrackerTab() {
     }
   }
 
-  if (loading) return <p className="text-sm text-[#666666]">Loading...</p>
+  if (loading) return <p className="text-sm text-[#666666] dark:text-[#888888]">Loading...</p>
 
   return (
     <div className="space-y-4">
@@ -521,22 +515,22 @@ function TrackerTab() {
           + Add Row
         </button>
         <button onClick={() => setShowPaste(v => !v)}
-          className="px-3 py-1.5 text-xs font-medium border border-[#e5e5e5] text-[#666666] rounded-lg hover:bg-[#fafafa] transition-colors">
+          className="px-3 py-1.5 text-xs font-medium border border-[#e5e5e5] dark:border-[#222222] text-[#666666] dark:text-[#888888] rounded-lg hover:bg-[#fafafa] dark:hover:bg-[#161616] transition-colors">
           Paste Import
         </button>
         {rows.some(r => !r._new) && (
           <button onClick={clearAll} disabled={clearing}
-            className="px-3 py-1.5 text-xs font-medium text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50 ml-auto">
+            className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors disabled:opacity-50 ml-auto">
             {clearing ? 'Clearing...' : 'Clear All'}
           </button>
         )}
       </div>
 
       {showPaste && (
-        <div className="bg-white border border-[#e5e5e5] rounded-xl p-4 space-y-3">
-          <p className="text-xs text-[#666666]">Paste tab-separated or comma-separated rows (PAN, TDS Amount):</p>
+        <div className="bg-white dark:bg-[#111111] border border-[#e5e5e5] dark:border-[#222222] rounded-xl p-4 space-y-3">
+          <p className="text-xs text-[#666666] dark:text-[#888888]">Paste tab-separated or comma-separated rows (PAN, TDS Amount):</p>
           <textarea ref={pasteRef} rows={6}
-            className="w-full border border-[#e5e5e5] rounded-lg px-3 py-2 text-sm font-mono text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
+            className="w-full border border-[#e5e5e5] dark:border-[#222222] rounded-lg px-3 py-2 text-sm font-mono text-[#111111] dark:text-white bg-white dark:bg-[#0a0a0a] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
             placeholder={'ABCDE1234F\t12345.00\nXYZAB5678G\t9876.50'} />
           <div className="flex gap-2">
             <button onClick={handlePaste}
@@ -544,45 +538,45 @@ function TrackerTab() {
               Import
             </button>
             <button onClick={() => setShowPaste(false)}
-              className="px-3 py-1.5 text-xs font-medium border border-[#e5e5e5] text-[#666666] rounded-lg hover:bg-[#fafafa] transition-colors">
+              className="px-3 py-1.5 text-xs font-medium border border-[#e5e5e5] dark:border-[#222222] text-[#666666] dark:text-[#888888] rounded-lg hover:bg-[#fafafa] dark:hover:bg-[#161616] transition-colors">
               Cancel
             </button>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+      <div className="bg-white dark:bg-[#111111] rounded-xl border border-[#e5e5e5] dark:border-[#222222] overflow-hidden">
         {rows.length === 0 ? (
-          <p className="text-sm text-[#666666] text-center py-8">No tracker entries yet. Add a row or paste data above.</p>
+          <p className="text-sm text-[#666666] dark:text-[#888888] text-center py-8">No tracker entries yet. Add a row or paste data above.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">PAN</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] uppercase tracking-wider">TDS Amount</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">Added</th>
-                  <th className="px-5 py-3 text-center text-xs font-semibold text-[#666666] uppercase tracking-wider">Actions</th>
+                <tr className="bg-[#fafafa] dark:bg-[#161616] border-b border-[#e5e5e5] dark:border-[#222222]">
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">PAN</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">TDS Amount</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Added</th>
+                  <th className="px-5 py-3 text-center text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map(row => (
-                  <tr key={row.id} className={`border-b border-[#e5e5e5] last:border-0 ${row._dirty ? 'bg-[#fffbe6]' : 'hover:bg-[#fafafa]'}`}>
+                  <tr key={row.id} className={`border-b border-[#e5e5e5] dark:border-[#222222] last:border-0 ${row._dirty ? 'bg-[#fffbe6] dark:bg-[#2a2400]' : 'hover:bg-[#fafafa] dark:hover:bg-[#161616]'}`}>
                     <td className="px-5 py-2.5">
                       <input type="text" value={row.pan}
                         onChange={e => updateCell(row.id, 'pan', e.target.value.toUpperCase())}
                         onBlur={() => row._dirty && !row._new && saveRow(row)}
-                        className="w-full font-mono text-sm text-[#111111] bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#2563eb] rounded px-1"
+                        className="w-full font-mono text-sm text-[#111111] dark:text-white bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#2563eb] rounded px-1"
                         placeholder="PAN" />
                     </td>
                     <td className="px-5 py-2.5">
                       <input type="number" value={row.tds_amount ?? ''}
                         onChange={e => updateCell(row.id, 'tds_amount', e.target.value)}
                         onBlur={() => row._dirty && !row._new && saveRow(row)}
-                        className="w-full text-sm text-right text-[#111111] bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#2563eb] rounded px-1"
+                        className="w-full text-sm text-right text-[#111111] dark:text-white bg-transparent border-0 focus:outline-none focus:ring-1 focus:ring-[#2563eb] rounded px-1"
                         placeholder="0.00" />
                     </td>
-                    <td className="px-5 py-2.5 text-xs text-[#666666]">
+                    <td className="px-5 py-2.5 text-xs text-[#666666] dark:text-[#888888]">
                       {row._new ? '—' : new Date(row.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })}
                     </td>
                     <td className="px-5 py-2.5 text-center">
@@ -594,7 +588,7 @@ function TrackerTab() {
                           </button>
                         )}
                         <button onClick={() => deleteRow(row.id, !!row._new)}
-                          className="text-[#666666] hover:text-red-500 transition-colors">
+                          className="text-[#666666] dark:text-[#888888] hover:text-red-500 transition-colors">
                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -611,8 +605,6 @@ function TrackerTab() {
     </div>
   )
 }
-
-// ─── Tab 3: Reconciliation ────────────────────────────────────────────────────
 
 function ReconciliationTab() {
   const [rows, setRows] = useState<RecRow[]>([])
@@ -634,52 +626,51 @@ function ReconciliationTab() {
   const mismatched = rows.filter(r => r.status === 'TDS Mismatch').length
   const accuracy = received > 0 ? Math.round((matched / received) * 100) : 0
 
-  if (loading) return <p className="text-sm text-[#666666]">Loading...</p>
+  if (loading) return <p className="text-sm text-[#666666] dark:text-[#888888]">Loading...</p>
 
   return (
     <div className="space-y-6">
-      {/* 6 stat cards */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Total PANs in Tracker" value={total} sub="unique PANs" color="text-[#111111]" />
-        <StatCard label="Form 16A Received" value={received} sub="PANs with Form 16A" color="text-green-600" />
-        <StatCard label="Form 16A Pending" value={pending} sub="PANs missing Form 16A" color="text-amber-600" />
-        <StatCard label="Matched" value={matched} sub="TDS difference ≤ ₹5" color="text-green-600" />
-        <StatCard label="Mismatched" value={mismatched} sub="TDS difference > ₹5" color="text-red-600" />
-        <StatCard label="Accuracy" value={`${accuracy}%`} sub="of received PANs matched" color={accuracy >= 80 ? 'text-green-600' : accuracy >= 50 ? 'text-amber-600' : 'text-red-600'} />
+        <StatCard label="Total PANs in Tracker" value={total} sub="unique PANs" color="text-[#111111] dark:text-white" />
+        <StatCard label="Form 16A Received" value={received} sub="PANs with Form 16A" color="text-green-600 dark:text-green-400" />
+        <StatCard label="Form 16A Pending" value={pending} sub="PANs missing Form 16A" color="text-amber-600 dark:text-amber-400" />
+        <StatCard label="Matched" value={matched} sub="TDS difference ≤ ₹5" color="text-green-600 dark:text-green-400" />
+        <StatCard label="Mismatched" value={mismatched} sub="TDS difference > ₹5" color="text-red-600 dark:text-red-400" />
+        <StatCard label="Accuracy" value={`${accuracy}%`} sub="of received PANs matched" color={accuracy >= 80 ? 'text-green-600 dark:text-green-400' : accuracy >= 50 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400'} />
       </div>
 
       <div className="flex justify-end">
         <button onClick={fetchData}
-          className="px-3 py-1.5 text-xs font-medium border border-[#e5e5e5] text-[#666666] rounded-lg hover:bg-[#fafafa] transition-colors">
+          className="px-3 py-1.5 text-xs font-medium border border-[#e5e5e5] dark:border-[#222222] text-[#666666] dark:text-[#888888] rounded-lg hover:bg-[#fafafa] dark:hover:bg-[#161616] transition-colors">
           Refresh
         </button>
       </div>
 
       {rows.length === 0 ? (
-        <div className="bg-white rounded-xl border border-[#e5e5e5] p-8 text-center">
-          <p className="text-sm text-[#666666]">No data. Add entries to TDS Tracker and upload Form 16A to see reconciliation.</p>
+        <div className="bg-white dark:bg-[#111111] rounded-xl border border-[#e5e5e5] dark:border-[#222222] p-8 text-center">
+          <p className="text-sm text-[#666666] dark:text-[#888888]">No data. Add entries to TDS Tracker and upload Form 16A to see reconciliation.</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-[#e5e5e5] overflow-hidden">
+        <div className="bg-white dark:bg-[#111111] rounded-xl border border-[#e5e5e5] dark:border-[#222222] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-[#fafafa] border-b border-[#e5e5e5]">
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">PAN</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] uppercase tracking-wider">Tracker TDS</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] uppercase tracking-wider">Form 16A TDS</th>
-                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] uppercase tracking-wider">Difference</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] uppercase tracking-wider">Coverage</th>
+                <tr className="bg-[#fafafa] dark:bg-[#161616] border-b border-[#e5e5e5] dark:border-[#222222]">
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">PAN</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Tracker TDS</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Form 16A TDS</th>
+                  <th className="px-5 py-3 text-right text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Difference</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Status</th>
+                  <th className="px-5 py-3 text-left text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider">Coverage</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, i) => (
-                  <tr key={i} className="border-b border-[#e5e5e5] last:border-0 hover:bg-[#fafafa]">
-                    <td className="px-5 py-3 font-mono font-medium text-[#111111]">{row.pan}</td>
-                    <td className="px-5 py-3 text-right text-[#111111]">{fmt(row.tracker_amount)}</td>
-                    <td className="px-5 py-3 text-right text-[#111111]">{fmt(row.form16a_amount)}</td>
-                    <td className="px-5 py-3 text-right text-[#111111]">{row.difference !== null ? fmt(row.difference) : '—'}</td>
+                  <tr key={i} className="border-b border-[#e5e5e5] dark:border-[#222222] last:border-0 hover:bg-[#fafafa] dark:hover:bg-[#161616]">
+                    <td className="px-5 py-3 font-mono font-medium text-[#111111] dark:text-white">{row.pan}</td>
+                    <td className="px-5 py-3 text-right text-[#111111] dark:text-white">{fmt(row.tracker_amount)}</td>
+                    <td className="px-5 py-3 text-right text-[#111111] dark:text-white">{fmt(row.form16a_amount)}</td>
+                    <td className="px-5 py-3 text-right text-[#111111] dark:text-white">{row.difference !== null ? fmt(row.difference) : '—'}</td>
                     <td className="px-5 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusBadge(row.status)}`}>
                         {row.status}
@@ -687,7 +678,9 @@ function ReconciliationTab() {
                     </td>
                     <td className="px-5 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        row.coverage === 'Received' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                        row.coverage === 'Received'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
                       }`}>
                         {row.coverage}
                       </span>
@@ -705,10 +698,10 @@ function ReconciliationTab() {
 
 function StatCard({ label, value, sub, color }: { label: string; value: number | string; sub: string; color: string }) {
   return (
-    <div className="bg-white rounded-xl border border-[#e5e5e5] p-5">
-      <div className="text-xs font-semibold text-[#666666] uppercase tracking-wider mb-1.5">{label}</div>
+    <div className="bg-white dark:bg-[#111111] rounded-xl border border-[#e5e5e5] dark:border-[#222222] p-5">
+      <div className="text-xs font-semibold text-[#666666] dark:text-[#888888] uppercase tracking-wider mb-1.5">{label}</div>
       <div className={`text-2xl font-bold ${color}`}>{value}</div>
-      <div className="text-xs text-[#666666] mt-1">{sub}</div>
+      <div className="text-xs text-[#666666] dark:text-[#888888] mt-1">{sub}</div>
     </div>
   )
 }
